@@ -95,8 +95,16 @@
 				plan.position.x = 0;
 				plan.position.y = -3; 
 				
+				//Räknar ut acceleration, hastighet och vinkel
+				acce = (1/inertia)*(force*radius) + gravity*mass*Math.cos(angle);
+				velocity = velocity + step*acce;
+				angle = angle - Math.abs(step*velocity);
+				//objectTranslation.position.x = geometryBox.x*Math.cos(angle);
+				//objectTranslation.position.y = objectTranslation.position.y*Math.sin(angle);
+
 				
 				delta = clock.getDelta();
+
 
 				// Render the scene
 				renderer.render( scene, camera );
