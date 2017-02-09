@@ -5,7 +5,7 @@ tid = linspace(0,1,values);
 force = zeros(1, values);
 force(1) = 100; %Newton
 force(2) = 100; %Newton
-radie = 0.2; %Meter
+radie = 0.8; %Meter
 massa = 5; %kilogram
 langd = 1; %Meter
 bredd = 1; %Meter
@@ -27,18 +27,7 @@ troghet = massa/3*(langd^2+bredd^2); %kg/m^2
 step = 1/1000; %Step size
 ifsats = 0;
 for idx = 2:values
-    acce(1,idx) = (1/troghet)*(force(idx)*radie) + g*massa*cos(vinkel(idx-1));
-    hastighet(1,idx) = hastighet(idx-1) + step*acce(idx);
-    vinkel(1,idx) = (vinkel(idx-1) - step*hastighet(idx));
-    if vinkel(1,idx) <0
-        vinkel(1,idx) =0;
-
-        hastighet(1,idx) = -hastighet(idx-1)*0.2;
-
-        %acce(1, idx) = 0;
-
-    
-    if radie < Hmin % Faller bakåt
+     if radie < Hmin % Faller bakåt
         
         acce(1,idx) = ((1/troghet)*(force(idx)*radie) + g*massa*cos(vinkel(idx-1)));
         hastighet(1,idx) = hastighet(idx-1) + step*acce(idx);
@@ -67,7 +56,6 @@ for idx = 2:values
         hastighet(1,idx) = 0;
         acce(1, idx) = 0;  
         loop = 3;
-    end
     end
 end
 
