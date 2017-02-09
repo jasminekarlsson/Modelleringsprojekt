@@ -28,7 +28,9 @@
 			var objectSpin = new THREE.Group();
 			var objectTranslation = new THREE.Group();
 			var objectMesh;
+
 			var acce = 0, velocity = 0, angle = 3.1415/2;
+
 
 			
 			function onWindowResize() {
@@ -54,7 +56,9 @@
 				// Mesh
 				var geometryBox = new THREE.BoxGeometry( 2, 2, 2 );
 				var materialBox = new THREE.MeshBasicMaterial();
+
 				//materialBox.wireframe = true;
+
 				objectMesh = new THREE.Mesh( geometryBox, materialBox );
 
 				// Top-level node
@@ -86,12 +90,14 @@
 				var gravity = 9.82;
 				var inertia = mass/3*(length*length+width*width) //tröghetsmoment
 				var step = 1/1000;
+
 				// Set up the camera
 				camera.position.x = 0;
 				camera.position.y = -mouseY*10;
 				camera.lookAt( scene.position );
 				
 				delta = clock.getDelta();
+
 				
 				// Perform animations
 				//objectTranslation.position.x = 3.0;
@@ -106,6 +112,7 @@
 				angle = angle - Math.abs(step*velocity);
 				objectTranslation.position.x = geometryBox.x*Math.cos(angle);
 				objectTranslation.position.y = objectTranslation.position.y*Math.sin(angle);
+
 
 				// Render the scene
 				renderer.render( scene, camera );
