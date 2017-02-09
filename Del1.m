@@ -1,4 +1,4 @@
-%% Börja om efter ANNAS hjälp
+%% BÃ¶rja om efter ANNAS hjÃ¤lp
 
 values = 301;
 
@@ -27,7 +27,9 @@ for idx = 2:values
     vinkel(1,idx) = (vinkel(idx-1) - step*hastighet(idx));
     if vinkel(1,idx) <0
         vinkel(1,idx) =0;
-        hastighet(1,idx) = hastighet(idx-1)*0.2;
+
+        hastighet(1,idx) = -hastighet(idx-1)*0.2;
+
         %acce(1, idx) = 0;
     end
 end
