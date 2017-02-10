@@ -43,7 +43,7 @@ vinkel = zeros(1, values);
 
 % Startvärden
 vinkel(1) = pi/2; % Startvinkel, radian
-posy(1) = 0.2; %start position on y-axis
+posy(1) = 5; %start position on y-axis
 
 step = 1/1000; %Step size
 for index = 1:values-1
@@ -57,7 +57,7 @@ for index = 1:values-1
         
         % Translation i x-led
         if ( cos(forceAngle) * force(1) >= frictionStill)
-            accx(index) = 1/mass * (cos(forceAngle) * force(index) - frictionMove * velx(index));
+            accx(index) = 1/mass * ((cos(forceAngle) * force(index)) - frictionMove * velx(index));
             velx(index+1) = velx(index) + step * accx(index);
             posx(index+1) = posx(index) + step * velx(index);
         else
@@ -68,7 +68,7 @@ for index = 1:values-1
         
         % Translation i y-led
         if posy(index) > 0
-            accy(index) = 1/mass * (sin(forceAngle) * (force(index) - gravity));
+            accy(index) = 1/mass * ((sin(forceAngle) * force(index)) - gravity * mass);
             vely(index+1) = vely(index) + step * accy(index);
             posy(index+1) = posy(index) + step * vely(index);
         else
@@ -90,7 +90,7 @@ for index = 1:values-1
         
         % Translation i x-led
         if ( cos(forceAngle) * force(1) >= frictionStill)
-            accx(index) = 1/mass * (cos(forceAngle) * force(index) - frictionMove * velx(index));
+            accx(index) = 1/mass * ((cos(forceAngle) * force(index)) - frictionMove * velx(index));
             velx(index+1) = velx(index) + step * accx(index);
             posx(index+1) = posx(index) + step * velx(index);
         else
@@ -101,7 +101,7 @@ for index = 1:values-1
         
         % Translation i y-led
         if posy(index) > 0
-            accy(index) = 1/mass * (sin(forceAngle) * (force(index) - gravity));
+            accy(index) = 1/mass * ((sin(forceAngle) * force(index)) - gravity * mass);
             vely(index+1) = vely(index) + step * accy(index);
             posy(index+1) = posy(index) + step * vely(index);
         else
@@ -120,7 +120,7 @@ for index = 1:values-1
         
         % Translation i x-led
         if ( cos(forceAngle) * force(1) >= frictionStill)
-            accx(index) = 1/mass * (cos(forceAngle) * force(index) - frictionMove * velx(index));
+            accx(index) = 1/mass * ((cos(forceAngle) * force(index)) - frictionMove * velx(index));
             velx(index+1) = velx(index) + step * accx(index);
             posx(index+1) = posx(index) + step * velx(index);
         else
@@ -131,7 +131,7 @@ for index = 1:values-1
         
         % Translation i y-led
         if posy(index) > 0
-            accy(index) = 1/mass * (sin(forceAngle) * (force(index) - gravity));
+            accy(index) = 1/mass * ((sin(forceAngle) * force(index)) - gravity * mass);
             vely(index+1) = vely(index) + step * accy(index);
             posy(index+1) = posy(index) + step * vely(index);
         else
@@ -143,31 +143,31 @@ for index = 1:values-1
 end
 
 
-subplot(4,3,1)
+subplot(3,3,1)
 plot(tid,accx);
 title('Acceleration x-led')
-subplot(4,3,2)
+subplot(3,3,2)
 plot(tid,velx);
 title('Hastighet x-led')
-subplot(4,3,3)
+subplot(3,3,3)
 plot(tid,posx);
 title('Position x-led')
-subplot(4,3,4)
+subplot(3,3,4)
 plot(tid,accy);
 title('Acceleration y-led')
-subplot(4,3,5)
+subplot(3,3,5)
 plot(tid,vely);
 title('Hastighet y-led')
-subplot(4,3,6)
+subplot(3,3,6)
 plot(tid,posy);
-title('Position z-led')
-subplot(4,3,7)
+title('Position y-led')
+subplot(3,3,7)
 plot(tid,acce);
 title('Vinkelacceleration')
-subplot(4,3,8)
+subplot(3,3,8)
 plot(tid, hastighet);
 title('Vinkelhastighet')
-subplot(4,3,9)
+subplot(3,3,9)
 plot(tid, vinkel);
 title('Vinkel')
 
