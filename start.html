@@ -1,5 +1,3 @@
-
-<!-- console.log('hej'); -->
 <!DOCTYPE html>
 <html lang="en">
 	<head>
@@ -40,21 +38,10 @@
 			var accx = 0, velx = 0, posx;
 			
 			//Translation y-led
-			var accy = 0, vely = 0, posy = 2;
+			var accy = 0, vely = 0, posy;
 			
-<<<<<<< HEAD
-			//Force pushing on object
-			var force = 100;
-
-			//defining Hmin/Hmax
-			var Hmin;
-			var Hmax;
-			
-			function onWindowResize() {
-=======
 			function onWindowResize() 
 			{
->>>>>>> origin/master
 				windowHalfX = window.innerWidth / 2;
 				windowHalfY = window.innerHeight / 2;
 				camera.aspect = window.innerWidth / window.innerHeight;
@@ -74,13 +61,7 @@
 				var materialBlock = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: false });
 				//materialBlock.wireframe = true;
 				block = new THREE.Mesh( geometryBlock, materialBlock );
-<<<<<<< HEAD
-				
-
-		
-=======
 				// MESH object 3D ----------------------------------------------------
->>>>>>> origin/master
 				var meshMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
 				meshMaterial.wireframe = true;
 				var geom = new THREE.Geometry(); 
@@ -88,18 +69,10 @@
 				var v1 = new THREE.Vector3( 2,-2,-2);
 				var v2 = new THREE.Vector3( 2,-2, 2);
 				var v3 = new THREE.Vector3(-2,-2, 2);
-<<<<<<< HEAD
-				var v4 = new THREE.Vector3(-2,2,-2);
-				var v5 = new THREE.Vector3(2,2, -2);
-				var v6 = new THREE.Vector3(2,2,2);
-				var v7 = new THREE.Vector3(-2,2,2);
-
-=======
 				var v4 = new THREE.Vector3(-2, 2,-2);
 				var v5 = new THREE.Vector3( 2, 2,-2);
 				var v6 = new THREE.Vector3( 2, 2, 2);
 				var v7 = new THREE.Vector3(-2, 2, 2);
->>>>>>> origin/master
 				geom.vertices.push(v0);
 				geom.vertices.push(v1);
 				geom.vertices.push(v2);
@@ -108,17 +81,6 @@
 				geom.vertices.push(v5);
 				geom.vertices.push(v6);
 				geom.vertices.push(v7);
-<<<<<<< HEAD
-				
-
-				geom.faces.push( new THREE.Face3(2,7,3) );
-				geom.faces.push( new THREE.Face3(2,6,7) );
-				//geom.faces.push( new THREE.Face4(0,4,7,3) );
-				//geom.faces.push( new THREE.Face4(1,2,6,5) );
-				//geom.faces.push( new THREE.Face4(4,5,6,7) );
-				//geom.faces.push( new THREE.Face4(0,1,5,4) );
-
-=======
 				geom.faces.push( new THREE.Face3(0,1,2) ); // face0
 				geom.faces.push( new THREE.Face3(0,2,3) ); // face0
 				geom.faces.push( new THREE.Face3(1,5,6) ); // face1
@@ -131,7 +93,6 @@
 				geom.faces.push( new THREE.Face3(3,7,4) ); // face4
 				geom.faces.push( new THREE.Face3(4,7,5) ); // face5
 				geom.faces.push( new THREE.Face3(5,7,6) ); // face5
->>>>>>> origin/master
 				geom.computeFaceNormals();
 				geom.computeVertexNormals();
 				object = new THREE.Mesh( geom,meshMaterial);
@@ -153,17 +114,9 @@
 				scene.add( sceneRoot );
 				
 				// Sun branch
-<<<<<<< HEAD
-				//2sceneRoot.add( object ); //New node for translation transformation
-				sceneRoot.add(plan); 
-				sceneRoot.add(block); 
-				
-				
-=======
 				sceneRoot.add( block );
 				sceneRoot.add( object ); //New node for translation transformation
 				sceneRoot.add(golv); 
->>>>>>> origin/master
 				
 				renderer = new THREE.WebGLRenderer();
 				renderer.setClearColor( 0x000000 );
@@ -173,23 +126,17 @@
 				window.addEventListener( 'resize', onWindowResize, false );
 			}
 			
-<<<<<<< HEAD
-				
-			//console.log('entering rendering loop');
-			function render() {	
-=======
 			function render()
       {				
 				//Hur man ändrar position på ett vertice
 				//geom.vertices[2].x = 3;
 					
->>>>>>> origin/master
 				var gravity = 9.82;	
 				var step = 1/400;	
 				
 				// Variabler för att räkna ut acceleration, hastighet och vinkel
 				//Kraftpåverkande konstanter
-				
+				var force = 10000;
 				var radius = 1;
 				var forceangle = 1;
 				
@@ -200,7 +147,7 @@
 				var inertia = mass/3*(length*length+width*width) //tröghetsmoment
 				
 				//Konstanter mellan block och golv
-				var frictionStill = 0.5;
+				var frictionstill = 0.5;
 				var frictionmove = 0.2
 				var CoR = 0.5; // ett tal mellan 0-1, studskoefficient
 				
@@ -210,14 +157,8 @@
 				camera.lookAt( scene.position );
 				
         //Startposition för blockets mittpunkt
-<<<<<<< HEAD
-				//block.position.x = 0;
-				//block.position.y = 5; 
-
-=======
 				block.position.x = 0;
 				block.position.y = -1; 
->>>>>>> origin/master
 				
 				plan.position.x = 0;
 				plan.position.y = -3;
@@ -227,7 +168,7 @@
 				
 				delta = clock.getDelta();
 				
-				//posy = block.position.y;
+				posy = block.position.y;
 				posx = block.position.x;
 				
 				//Startposition för punkt längst ner till höger
@@ -251,17 +192,6 @@
 				//objectTranslation.position.x = 3.0;
 				//objectTranslation.position.y = 10.0*Math.sin(delta);
 				//objectSpin.rotation.y += 0.02;
-<<<<<<< HEAD
-				//console.log('nu borde jag gå in i Hmin/Hmax');
-				//Om radie < Hmin -> tippar bakåt, Om radie > Hmax -> tippar framåt
-				if( force != 0){
-					Hmin = (force*length/2 - mass*gravity*width/2 - frictionStill*length/2)/force;
-					Hmax = (force*length/2 + mass*gravity*width/2 - frictionStill*length/2)/force;
-					console.log(Hmax)
-				}
-				//window.alert(Hmin + ' och ' + Hmax); <- om man vill skriva ut något
-				//Räknar ut acceleration, hastighet och vinkel
-=======
 				
 				//Räknar ut acceleration, hastighet och vinkel
 				//acce = (1/inertia)*(force*radius) + gravity*mass*Math.cos(angle);
@@ -271,54 +201,47 @@
 				//Om radie < Hmin -> tippar bakåt, Om radie > Hmax -> tippar framåt
 				var Hmin = (force*length/2 - mass*gravity*width/2 - frictionstill*length/2)/force;
 				var Hmax = (force*length/2 + mass*gravity*width/2 - frictionstill*length/2)/force;
->>>>>>> origin/master
 				if (radius > Hmax) //faller framåt
 				{
 					acce = (1/inertia)*(force*radius) + gravity*mass*Math.cos(angle);
 					velocity = velocity + step*acce;
 					angle = angle - step*velocity;
 					
-					if(angle < 0 && posy < -1.5)
+					if(angle < 0)
 					{
 						angle = 0;
 						velocity = -velocity*CoR;
 					}
 					
 					//Translation i x-led
-					if(Math.cos(angle)*force >= frictionStill)
+					if(Math.cos(angle)*force >= frictionstill)
 					{
 						accx = 1/mass*(Math.cos(forceangle)*force - frictionmove*velx);
 						velx = velx + step*accx;
 						posx = posx + step*velx;
 						//window.alert('I if-sats' + posx);
-						block.position.x = posx;
+						//block.position.x = posx;
 					}
 					
 					//Translation i y-led
 					if(posy > -1)
 					{
-						accy = 1/mass*((Math.sin(forceangle)*force)-gravity*mass);
+						accy = 1/mass*Math.sin(forceangle)*(force-gravity*mass)
 						vely = vely + step*accy;
 						posy = posy + step*vely;
 						block.position.y = posy;
 						//window.alert('I if-sats' + posy);
-<<<<<<< HEAD
-						console.log(accy);
-						console.log(vely);
-						force = 0;
-=======
->>>>>>> origin/master
 					}
 					
 					//Temporär, men det ser snyggare ut
-					//block.position.x = -angle;
+					block.position.x = -angle;
 					
 				}
-				else if(radius < Hmin) //Roterar bakåt
+				else if(radie < Hmin) //Roterar bakåt
 				{
 					acce = (1/inertia)*(force*radius) + gravity*mass*Math.cos(angle);
 					velocity = velocity + step*acce;
-					angle 
+					angle = angle + step*velocity;
 					
 					if(angle > Math.PI)
 					{
@@ -346,7 +269,6 @@
         //objectTranslation.position.y = objectTranslation.position.y*Math.sin(angle);
 				// Render the scene
 				renderer.render( scene, camera );
-				force = 0;
 			}
 			
 			function animate() 
