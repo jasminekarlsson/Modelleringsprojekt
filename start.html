@@ -38,6 +38,7 @@
 			var accx = 0, velx = 0, posx;
 			
 			//Translation y-led
+
 			var accy = 0, vely = 0, posy = 0;
 			
 			var Hmax, Hmin;
@@ -67,6 +68,7 @@
 				// MESH object 3D ----------------------------------------------------
 				var meshMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
 				meshMaterial.wireframe = true;
+
 				geom = new THREE.Geometry(); 
 				v0 = new THREE.Vector3(-2,-2,-2);
 				v1 = new THREE.Vector3( 2,-2,-2);
@@ -149,7 +151,6 @@
 				var inertia = mass/3*(length*length+width*width) //tröghetsmoment
 				var length2 = Math.abs(geom.vertices[4].y - geom.vertices[0].y);
 				var width2 = Math.abs(geom.vertices[2].z - geom.vertices[1].z)
-				console.log(width2);
 				
 				//Konstanter mellan block och golv
 				var frictionstill = 0.5;
@@ -173,6 +174,7 @@
 				
 				delta = clock.getDelta();
 				
+
 				//posy = block.position.y;
 				posx = block.position.x;
 				
@@ -204,6 +206,7 @@
 				//angle = angle - Math.abs(step*velocity);
 				//objectTranslation.position.x = geometryBox.x*Math.cos(angle);
 				//Om radie < Hmin -> tippar bakåt, Om radie > Hmax -> tippar framåt
+
 				if(force != 0){
 					Hmin = (force*length/2 - mass*gravity*width/2 - frictionstill*length/2)/force;
 					Hmax = (force*length/2 + mass*gravity*width/2 - frictionstill*length/2)/force;
