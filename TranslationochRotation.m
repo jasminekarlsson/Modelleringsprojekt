@@ -21,7 +21,7 @@ CoR = 0.5;% bara ett tal mellan 0-1, studskoefficient
 force = zeros(values,1);
 force(1) = 100; %newton
 forceAngle = 1;%radian
-radie = 0.8; %Meter
+radie = 0.2; %Meter
 % Om radie < Hmin -> tippar bakåt, Om radie > Hmax -> tippar framåt
 Hmin = (((force(1)*langd)/2) - ((mass*gravity*bredd)/2) - ((frictionStill * langd)/2)) / force(1); %Meter
 Hmax = (((force(1)*langd)/2) + ((mass*gravity*bredd)/2) - ((frictionStill * langd)/2)) / force(1); %Meter
