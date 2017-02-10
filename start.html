@@ -44,43 +44,116 @@
 			}
 			
 			function init() {
-
 				container = document.getElementById( 'container' );
-
 				camera = new THREE.PerspectiveCamera( 60, window.innerWidth/window.innerHeight, 0.1, 100 );
 				camera.position.z = 10;
-
 				scene = new THREE.Scene();
 								
-
 				// MESH block
-				var geometryBlock = new THREE.PlaneGeometry( 2, 2 );
+				/*var geometryBlock = new THREE.PlaneGeometry( 2, 2 );
 				var materialBlock = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: false });
 				//materialBlock.wireframe = true;
 				block = new THREE.Mesh( geometryBlock, materialBlock );
+				*/
+
+		
+				var meshMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
+
+				var geom = new THREE.Geometry(); 
+				var v0 = new THREE.Vector3(-2,-2,-2);
+				var v1 = new THREE.Vector3(2,-2, -2);
+				var v2 = new THREE.Vector3(2,-2, 2);
+				var v3 = new THREE.Vector3(-2,-2, 2);
+				var v4 = new THREE.Vector3(-2,2,-2);
+				var v5 = new THREE.Vector3(2,2, -2);
+				var v6 = new THREE.Vector3(2,2,2);
+				var v7 = new THREE.Vector3(-2,2,2);
+
+				geom.vertices.push(v1);
+				geom.vertices.push(v2);
+				geom.vertices.push(v3);
+				geom.vertices.push(v4);
+				geom.vertices.push(v5);
+				geom.vertices.push(v6);
+				geom.vertices.push(v7);
+				geom.vertices.push(v8);
+
+				geom.faces.push( new THREE.Face3(2,7,3) );
+				geom.faces.push( new THREE.Face3(2,6,7) );
+				//geom.faces.push( new THREE.Face4(0,4,7,3) );
+				//geom.faces.push( new THREE.Face4(1,2,6,5) );
+				//geom.faces.push( new THREE.Face4(4,5,6,7) );
+				//geom.faces.push( new THREE.Face4(0,1,5,4) );
+
+				geom.computeFaceNormals();
+				geom.computeVertexNormals();
+
+				var object = new THREE.Mesh( geom,meshMaterial);
+				object.doubleSided = true;
+				
+				
+
+	/*************************************************
+
+				// ska göra linjer till en box (kallas kant)
+				var Geo = new THREE.Geometry();
+				Geo.vertices.push 
+				( 
+				new THREE.Vector3(1,1,0), // 0
+				new THREE.Vector3(1,-1,0), // 1
+				new THREE.Vector3(-1,-1,0), // 2
+			    new THREE.Vector3(-1,1,0) // 3
+			    );
+			    
+			    Geo.faces.push
+			    (
+			    new THREE.Face3 (0,2,1),
+			    new THREE.Face3 (0,3,2)
+			    );
+			    
+			    var material = new THREE.MeshBasicMaterial(); 
+			    var kant = new THREE.Line(Geo, material); 
+
+/*************************************************
+            var size = 2, step = 10;
+            var geometry = new THREE.Geometry();
+            for ( var i = - size; i <= size; i += step ) 
+            {
+
+                geometry.vertices.push( new THREE.Vector3( - size, i, 0 ) );
+                geometry.vertices.push( new THREE.Vector3(   size, i, 0 ) );
+
+                geometry.vertices.push( new THREE.Vector3( i, - size, 0 ) );
+                geometry.vertices.push( new THREE.Vector3( i,  size,  0 ) );
+
+            }
+
+            var material = new THREE.LineBasicMaterial();
+
+            var line = new THREE.Line( geometry, material, THREE.LinePieces );		    
+			       
+***********************************************/
 				
 				// MESH line
 				var geometryPlan = new THREE.PlaneGeometry(20,1); 
 				var materialPlan = new THREE.MeshBasicMaterial();
 				materialPlan.wireframe = true;
 				plan = new THREE.Mesh(geometryPlan, materialPlan); 
-
-
-
+				
 				// Top-level node
 				scene.add( sceneRoot );
-
+				
 				// Sun branch
-				sceneRoot.add( block ); //New node for translation transformation
+				sceneRoot.add( object ); //New node for translation transformation
 				sceneRoot.add(plan); 
-
-
+				
+				
+				
 				renderer = new THREE.WebGLRenderer();
 				renderer.setClearColor( 0x000000 );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				container.appendChild( renderer.domElement );
-
 				window.addEventListener( 'resize', onWindowResize, false );
 			}
 			
@@ -110,9 +183,12 @@
 				camera.position.y = -mouseY*10;
 				camera.lookAt( scene.position );
 				
-				//Startposition för blockets mittpunkt
-				block.position.x = 0;
-				block.position.y = 1.5; 
+
+
+        //Startposition för blockets mittpunkt
+				//block.position.x = 0;
+				//block.position.y = -1.5; 
+
 				
 				plan.position.x = 0;
 				plan.position.y = -3; 
