@@ -12,7 +12,7 @@
 		<!-- <script src="three.min.js"></script> -->
 		<script src="three.js"></script>
 		<script>
-			
+
 			// Lots of global variables. (This is JavaScript. No use complaining.)
 			var container;
 			var camera, scene, renderer;
@@ -27,6 +27,7 @@
 			var sceneRoot = new THREE.Group();
 			var block;
 			var plan;
+
 			var geom;
 			var v0,v1,v2,v3,v4,v5,v6,v7;
 			var object; //3D
@@ -49,18 +50,23 @@
 				renderer.setSize( window.innerWidth, window.innerHeight );
 			}
 			
+
 			function init() 
 			{
+
 				container = document.getElementById( 'container' );
+
 				camera = new THREE.PerspectiveCamera( 60, window.innerWidth/window.innerHeight, 0.1, 100 );
 				camera.position.z = 10;
 				scene = new THREE.Scene();
 								
+
 				// MESH block
 				var geometryBlock = new THREE.PlaneGeometry( 2, 2 );
 				var materialBlock = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: false });
 				//materialBlock.wireframe = true;
 				block = new THREE.Mesh( geometryBlock, materialBlock );
+
 				// MESH object 3D ----------------------------------------------------
 				var meshMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
 				meshMaterial.wireframe = true;
@@ -103,29 +109,32 @@
 				var materialGolv = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 				materialGolv.wireframe = true;
 				golv = new THREE.Mesh(geometryGolv, materialPlan); 
+
 				
-				// MESH line 2D ---------------------------------------------------
+				// MESH line
 				var geometryPlan = new THREE.PlaneGeometry(20,1); 
 				var materialPlan = new THREE.MeshBasicMaterial();
 				materialPlan.wireframe = true;
 				plan = new THREE.Mesh(geometryPlan, materialPlan); 
-				
+
+
+
 				// Top-level node
 				scene.add( sceneRoot );
-				
+
 				// Sun branch
-				sceneRoot.add( block );
-				sceneRoot.add( object ); //New node for translation transformation
-				sceneRoot.add(golv); 
-				
+				sceneRoot.add( block ); //New node for translation transformation
+				sceneRoot.add(plan); 
+
+
 				renderer = new THREE.WebGLRenderer();
 				renderer.setClearColor( 0x000000 );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				container.appendChild( renderer.domElement );
+
 				window.addEventListener( 'resize', onWindowResize, false );
 			}
-			
 			function render()
       {				
 				//Hur man ändrar position på ett vertice
@@ -144,22 +153,18 @@
 				var mass = 5;
 				var length = 1;
 				var width = 1;
+
 				var inertia = mass/3*(length*length+width*width) //tröghetsmoment
-				
-				//Konstanter mellan block och golv
-				var frictionstill = 0.5;
-				var frictionmove = 0.2
-				var CoR = 0.5; // ett tal mellan 0-1, studskoefficient
+				var step = 1/1000;
 				
 				// Set up the camera
 				camera.position.x = 0;
 				camera.position.y = -mouseY*10;
 				camera.lookAt( scene.position );
 				
-        //Startposition för blockets mittpunkt
 				block.position.x = 0;
-				block.position.y = -1; 
-				
+				block.position.y = -1;
+        
 				plan.position.x = 0;
 				plan.position.y = -3;
 				
@@ -168,32 +173,13 @@
 				
 				delta = clock.getDelta();
 				
-				posy = block.position.y;
-				posx = block.position.x;
-				
-				//Startposition för punkt längst ner till höger
-				//posy = geom.vertices[2].y;
-				//posx = geom.geometry.vertices[2].position.x;
-				/*for(idx = 1; idx<7; idx++)
-				{
-					if(geom.vertices[idx].y < posy)
-					{
-						posy = geom.vertices[idx].y;
-					}
-					if(geom.vertices[idx].x > posx)
-					{
-						posx = geom.vertices[idx].x;
-					}
-					
-				}*/
-				
-			
 				// Perform animations
 				//objectTranslation.position.x = 3.0;
 				//objectTranslation.position.y = 10.0*Math.sin(delta);
 				//objectSpin.rotation.y += 0.02;
 				
 				//Räknar ut acceleration, hastighet och vinkel
+
 				//acce = (1/inertia)*(force*radius) + gravity*mass*Math.cos(angle);
 				//velocity = velocity + step*acce;
 				//angle = angle - Math.abs(step*velocity);
