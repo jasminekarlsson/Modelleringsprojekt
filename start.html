@@ -14,6 +14,7 @@
 		<!-- <script src="three.min.js"></script> -->
 		<script src="three.js"></script>
 		<script>
+			
 			// Lots of global variables. (This is JavaScript. No use complaining.)
 			var container;
 			var camera, scene, renderer;
@@ -28,6 +29,11 @@
 			var sceneRoot = new THREE.Group();
 			var block;
 			var plan;
+			var geom;
+			var v0,v1,v2,v3,v4,v5,v6,v7;
+			var object; //3D
+			var golv; //3D
+			
 			var acce = 0, velocity = 0, angle = Math.PI/2;
 			
 			//Translation x-led
@@ -36,6 +42,7 @@
 			//Translation y-led
 			var accy = 0, vely = 0, posy = 2;
 			
+<<<<<<< HEAD
 			//Force pushing on object
 			var force = 100;
 
@@ -44,6 +51,10 @@
 			var Hmax;
 			
 			function onWindowResize() {
+=======
+			function onWindowResize() 
+			{
+>>>>>>> origin/master
 				windowHalfX = window.innerWidth / 2;
 				windowHalfY = window.innerHeight / 2;
 				camera.aspect = window.innerWidth / window.innerHeight;
@@ -51,7 +62,8 @@
 				renderer.setSize( window.innerWidth, window.innerHeight );
 			}
 			
-			function init() {
+			function init() 
+			{
 				container = document.getElementById( 'container' );
 				camera = new THREE.PerspectiveCamera( 60, window.innerWidth/window.innerHeight, 0.1, 100 );
 				camera.position.z = 10;
@@ -62,21 +74,32 @@
 				var materialBlock = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: false });
 				//materialBlock.wireframe = true;
 				block = new THREE.Mesh( geometryBlock, materialBlock );
+<<<<<<< HEAD
 				
 
 		
+=======
+				// MESH object 3D ----------------------------------------------------
+>>>>>>> origin/master
 				var meshMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
-
+				meshMaterial.wireframe = true;
 				var geom = new THREE.Geometry(); 
 				var v0 = new THREE.Vector3(-2,-2,-2);
-				var v1 = new THREE.Vector3(2,-2, -2);
-				var v2 = new THREE.Vector3(2,-2, 2);
+				var v1 = new THREE.Vector3( 2,-2,-2);
+				var v2 = new THREE.Vector3( 2,-2, 2);
 				var v3 = new THREE.Vector3(-2,-2, 2);
+<<<<<<< HEAD
 				var v4 = new THREE.Vector3(-2,2,-2);
 				var v5 = new THREE.Vector3(2,2, -2);
 				var v6 = new THREE.Vector3(2,2,2);
 				var v7 = new THREE.Vector3(-2,2,2);
 
+=======
+				var v4 = new THREE.Vector3(-2, 2,-2);
+				var v5 = new THREE.Vector3( 2, 2,-2);
+				var v6 = new THREE.Vector3( 2, 2, 2);
+				var v7 = new THREE.Vector3(-2, 2, 2);
+>>>>>>> origin/master
 				geom.vertices.push(v0);
 				geom.vertices.push(v1);
 				geom.vertices.push(v2);
@@ -85,6 +108,7 @@
 				geom.vertices.push(v5);
 				geom.vertices.push(v6);
 				geom.vertices.push(v7);
+<<<<<<< HEAD
 				
 
 				geom.faces.push( new THREE.Face3(2,7,3) );
@@ -94,56 +118,32 @@
 				//geom.faces.push( new THREE.Face4(4,5,6,7) );
 				//geom.faces.push( new THREE.Face4(0,1,5,4) );
 
+=======
+				geom.faces.push( new THREE.Face3(0,1,2) ); // face0
+				geom.faces.push( new THREE.Face3(0,2,3) ); // face0
+				geom.faces.push( new THREE.Face3(1,5,6) ); // face1
+				geom.faces.push( new THREE.Face3(6,2,1) ); // face1
+				geom.faces.push( new THREE.Face3(2,7,3) ); // face2
+				geom.faces.push( new THREE.Face3(2,6,7) ); // face2
+				geom.faces.push( new THREE.Face3(0,4,5) ); // face3
+				geom.faces.push( new THREE.Face3(0,5,1) ); // face3
+				geom.faces.push( new THREE.Face3(0,3,4) ); // face4
+				geom.faces.push( new THREE.Face3(3,7,4) ); // face4
+				geom.faces.push( new THREE.Face3(4,7,5) ); // face5
+				geom.faces.push( new THREE.Face3(5,7,6) ); // face5
+>>>>>>> origin/master
 				geom.computeFaceNormals();
 				geom.computeVertexNormals();
-
-				var object = new THREE.Mesh( geom,meshMaterial);
+				object = new THREE.Mesh( geom,meshMaterial);
 				object.doubleSided = true;
 				
+				// MESH golv 3D ---------------------------------------------------
+				var geometryGolv = new THREE.BoxGeometry(16,0.1,10); 
+				var materialGolv = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+				materialGolv.wireframe = true;
+				golv = new THREE.Mesh(geometryGolv, materialPlan); 
 				
-
-	/*************************************************
-
-				// ska göra linjer till en box (kallas kant)
-				var Geo = new THREE.Geometry();
-				Geo.vertices.push 
-				( 
-				new THREE.Vector3(1,1,0), // 0
-				new THREE.Vector3(1,-1,0), // 1
-				new THREE.Vector3(-1,-1,0), // 2
-			    new THREE.Vector3(-1,1,0) // 3
-			    );
-			    
-			    Geo.faces.push
-			    (
-			    new THREE.Face3 (0,2,1),
-			    new THREE.Face3 (0,3,2)
-			    );
-			    
-			    var material = new THREE.MeshBasicMaterial(); 
-			    var kant = new THREE.Line(Geo, material); 
-
-/*************************************************
-            var size = 2, step = 10;
-            var geometry = new THREE.Geometry();
-            for ( var i = - size; i <= size; i += step ) 
-            {
-
-                geometry.vertices.push( new THREE.Vector3( - size, i, 0 ) );
-                geometry.vertices.push( new THREE.Vector3(   size, i, 0 ) );
-
-                geometry.vertices.push( new THREE.Vector3( i, - size, 0 ) );
-                geometry.vertices.push( new THREE.Vector3( i,  size,  0 ) );
-
-            }
-
-            var material = new THREE.LineBasicMaterial();
-
-            var line = new THREE.Line( geometry, material, THREE.LinePieces );		    
-			       
-***********************************************/
-				
-				// MESH line
+				// MESH line 2D ---------------------------------------------------
 				var geometryPlan = new THREE.PlaneGeometry(20,1); 
 				var materialPlan = new THREE.MeshBasicMaterial();
 				materialPlan.wireframe = true;
@@ -153,11 +153,17 @@
 				scene.add( sceneRoot );
 				
 				// Sun branch
+<<<<<<< HEAD
 				//2sceneRoot.add( object ); //New node for translation transformation
 				sceneRoot.add(plan); 
 				sceneRoot.add(block); 
 				
 				
+=======
+				sceneRoot.add( block );
+				sceneRoot.add( object ); //New node for translation transformation
+				sceneRoot.add(golv); 
+>>>>>>> origin/master
 				
 				renderer = new THREE.WebGLRenderer();
 				renderer.setClearColor( 0x000000 );
@@ -167,9 +173,17 @@
 				window.addEventListener( 'resize', onWindowResize, false );
 			}
 			
+<<<<<<< HEAD
 				
 			//console.log('entering rendering loop');
 			function render() {	
+=======
+			function render()
+      {				
+				//Hur man ändrar position på ett vertice
+				//geom.vertices[2].x = 3;
+					
+>>>>>>> origin/master
 				var gravity = 9.82;	
 				var step = 1/400;	
 				
@@ -179,7 +193,7 @@
 				var radius = 1;
 				var forceangle = 1;
 				
-				//Blockets konstanter 
+				//Blockets konstanter  <-- ATT GÖRA: Räkna ut längden och bredden beroende på verices-->
 				var mass = 5;
 				var length = 1;
 				var width = 1;
@@ -195,25 +209,49 @@
 				camera.position.y = -mouseY*10;
 				camera.lookAt( scene.position );
 				
-
-
         //Startposition för blockets mittpunkt
+<<<<<<< HEAD
 				//block.position.x = 0;
 				//block.position.y = 5; 
 
+=======
+				block.position.x = 0;
+				block.position.y = -1; 
+>>>>>>> origin/master
 				
 				plan.position.x = 0;
-				plan.position.y = -3; 
+				plan.position.y = -3;
+				
+				golv.position.x = 0;
+				golv.position.y = -2.1;
 				
 				delta = clock.getDelta();
 				
 				//posy = block.position.y;
 				posx = block.position.x;
+				
+				//Startposition för punkt längst ner till höger
+				//posy = geom.vertices[2].y;
+				//posx = geom.geometry.vertices[2].position.x;
+				/*for(idx = 1; idx<7; idx++)
+				{
+					if(geom.vertices[idx].y < posy)
+					{
+						posy = geom.vertices[idx].y;
+					}
+					if(geom.vertices[idx].x > posx)
+					{
+						posx = geom.vertices[idx].x;
+					}
+					
+				}*/
+				
 			
 				// Perform animations
 				//objectTranslation.position.x = 3.0;
 				//objectTranslation.position.y = 10.0*Math.sin(delta);
 				//objectSpin.rotation.y += 0.02;
+<<<<<<< HEAD
 				//console.log('nu borde jag gå in i Hmin/Hmax');
 				//Om radie < Hmin -> tippar bakåt, Om radie > Hmax -> tippar framåt
 				if( force != 0){
@@ -223,6 +261,17 @@
 				}
 				//window.alert(Hmin + ' och ' + Hmax); <- om man vill skriva ut något
 				//Räknar ut acceleration, hastighet och vinkel
+=======
+				
+				//Räknar ut acceleration, hastighet och vinkel
+				//acce = (1/inertia)*(force*radius) + gravity*mass*Math.cos(angle);
+				//velocity = velocity + step*acce;
+				//angle = angle - Math.abs(step*velocity);
+				//objectTranslation.position.x = geometryBox.x*Math.cos(angle);
+				//Om radie < Hmin -> tippar bakåt, Om radie > Hmax -> tippar framåt
+				var Hmin = (force*length/2 - mass*gravity*width/2 - frictionstill*length/2)/force;
+				var Hmax = (force*length/2 + mass*gravity*width/2 - frictionstill*length/2)/force;
+>>>>>>> origin/master
 				if (radius > Hmax) //faller framåt
 				{
 					acce = (1/inertia)*(force*radius) + gravity*mass*Math.cos(angle);
@@ -246,16 +295,19 @@
 					}
 					
 					//Translation i y-led
-					if(posy > -1.5)
+					if(posy > -1)
 					{
 						accy = 1/mass*((Math.sin(forceangle)*force)-gravity*mass);
 						vely = vely + step*accy;
 						posy = posy + step*vely;
 						block.position.y = posy;
 						//window.alert('I if-sats' + posy);
+<<<<<<< HEAD
 						console.log(accy);
 						console.log(vely);
 						force = 0;
+=======
+>>>>>>> origin/master
 					}
 					
 					//Temporär, men det ser snyggare ut
@@ -291,13 +343,14 @@
 				//Roterar runt z-axeln
 				block.rotation.z = angle;
 				
-				//objectTranslation.position.y = objectTranslation.position.y*Math.sin(angle);
+        //objectTranslation.position.y = objectTranslation.position.y*Math.sin(angle);
 				// Render the scene
 				renderer.render( scene, camera );
 				force = 0;
 			}
 			
-			function animate() {
+			function animate() 
+			{
 				requestAnimationFrame( animate ); // Request to be called again for next frame
 				render();
 			}
