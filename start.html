@@ -26,9 +26,14 @@
 			var sceneRoot = new THREE.Group();
 			var block;
 			var plan;
-
 			var acce = 0, velocity = 0, angle = Math.PI/2;
-
+			
+			//Translation x-led
+			var accx = 0, velx = 0, posx;
+			
+			//Translation y-led
+			var accy = 0, vely = 0, posy;
+			
 			
 			function onWindowResize() {
 				windowHalfX = window.innerWidth / 2;
@@ -158,7 +163,7 @@
 				
 				// Variabler för att räkna ut acceleration, hastighet och vinkel
 				//Kraftpåverkande konstanter
-				var force = 100;
+				var force = 10000;
 				var radius = 1;
 				var forceangle = 1;
 				
@@ -167,19 +172,18 @@
 				var length = 1;
 				var width = 1;
 				var inertia = mass/3*(length*length+width*width) //tröghetsmoment
-
 				
 				//Konstanter mellan block och golv
 				var frictionstill = 0.5;
 				var frictionmove = 0.2
 				var CoR = 0.5; // ett tal mellan 0-1, studskoefficient
-
 				
 				// Set up the camera
 				camera.position.x = 0;
 				camera.position.y = -mouseY*10;
 				camera.lookAt( scene.position );
 				
+
 
         //Startposition för blockets mittpunkt
 				//block.position.x = 0;
@@ -191,6 +195,9 @@
 				
 				delta = clock.getDelta();
 				
+				posy = block.position.y;
+				posx = block.position.x;
+			
 				// Perform animations
 				//objectTranslation.position.x = 3.0;
 				//objectTranslation.position.y = 10.0*Math.sin(delta);
@@ -201,7 +208,6 @@
 				var Hmax = (force*length/2 + mass*gravity*width/2 - frictionstill*length/2)/force;
 				//window.alert(Hmin + ' och ' + Hmax); <- om man vill skriva ut något
 				//Räknar ut acceleration, hastighet och vinkel
-
 				if (radius > Hmax) //faller framåt
 				{
 					acce = (1/inertia)*(force*radius) + gravity*mass*Math.cos(angle);
@@ -212,6 +218,26 @@
 					{
 						angle = 0;
 						velocity = -velocity*CoR;
+					}
+					
+					//Translation i x-led
+					if(Math.cos(angle)*force >= frictionstill)
+					{
+						accx = 1/mass*(Math.cos(forceangle)*force - frictionmove*velx);
+						velx = velx + step*accx;
+						posx = posx + step*velx;
+						//window.alert('I if-sats' + posx);
+						//block.position.x = posx;
+					}
+					
+					//Translation i y-led
+					if(posy > -1.5)
+					{
+						accy = 1/mass*Math.sin(forceangle)*(force-gravity*mass)
+						vely = vely + step*accy;
+						posy = posy + step*vely;
+						block.position.y = posy;
+						window.alert('I if-sats' + posy);
 					}
 					
 					//Temporär, men det ser snyggare ut
@@ -247,12 +273,11 @@
 				//Roterar runt z-axeln
 				block.rotation.z = angle;
 				
-
 				//objectTranslation.position.y = objectTranslation.position.y*Math.sin(angle);
 				// Render the scene
 				renderer.render( scene, camera );
 			}
-
+			
 			function animate() {
 				requestAnimationFrame( animate ); // Request to be called again for next frame
 				render();
