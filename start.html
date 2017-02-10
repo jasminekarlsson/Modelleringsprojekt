@@ -38,7 +38,11 @@
 			var accx = 0, velx = 0, posx;
 			
 			//Translation y-led
-			var accy = 0, vely = 0, posy;
+
+			var accy = 0, vely = 0, posy = 0;
+			
+			var Hmax, Hmin;
+			var force = 10000;
 			
 			function onWindowResize() 
 			{
@@ -64,15 +68,16 @@
 				// MESH object 3D ----------------------------------------------------
 				var meshMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
 				meshMaterial.wireframe = true;
-				var geom = new THREE.Geometry(); 
-				var v0 = new THREE.Vector3(-2,-2,-2);
-				var v1 = new THREE.Vector3( 2,-2,-2);
-				var v2 = new THREE.Vector3( 2,-2, 2);
-				var v3 = new THREE.Vector3(-2,-2, 2);
-				var v4 = new THREE.Vector3(-2, 2,-2);
-				var v5 = new THREE.Vector3( 2, 2,-2);
-				var v6 = new THREE.Vector3( 2, 2, 2);
-				var v7 = new THREE.Vector3(-2, 2, 2);
+
+				geom = new THREE.Geometry(); 
+				v0 = new THREE.Vector3(-2,-2,-2);
+				v1 = new THREE.Vector3( 2,-2,-2);
+				v2 = new THREE.Vector3( 2,-2, 1);
+				v3 = new THREE.Vector3(-2,-2, 1);
+				v4 = new THREE.Vector3(-2, 4,-2);
+				v5 = new THREE.Vector3( 2, 4,-2);
+				v6 = new THREE.Vector3( 2, 4, 1);
+				v7 = new THREE.Vector3(-2, 4, 1);
 				geom.vertices.push(v0);
 				geom.vertices.push(v1);
 				geom.vertices.push(v2);
@@ -136,7 +141,6 @@
 				
 				// Variabler för att räkna ut acceleration, hastighet och vinkel
 				//Kraftpåverkande konstanter
-				var force = 10000;
 				var radius = 1;
 				var forceangle = 1;
 				
@@ -145,6 +149,8 @@
 				var length = 1;
 				var width = 1;
 				var inertia = mass/3*(length*length+width*width) //tröghetsmoment
+				var length2 = Math.abs(geom.vertices[4].y - geom.vertices[0].y);
+				var width2 = Math.abs(geom.vertices[2].z - geom.vertices[1].z)
 				
 				//Konstanter mellan block och golv
 				var frictionstill = 0.5;
@@ -168,7 +174,8 @@
 				
 				delta = clock.getDelta();
 				
-				posy = block.position.y;
+
+				//posy = block.position.y;
 				posx = block.position.x;
 				
 				//Startposition för punkt längst ner till höger
@@ -199,8 +206,11 @@
 				//angle = angle - Math.abs(step*velocity);
 				//objectTranslation.position.x = geometryBox.x*Math.cos(angle);
 				//Om radie < Hmin -> tippar bakåt, Om radie > Hmax -> tippar framåt
-				var Hmin = (force*length/2 - mass*gravity*width/2 - frictionstill*length/2)/force;
-				var Hmax = (force*length/2 + mass*gravity*width/2 - frictionstill*length/2)/force;
+
+				if(force != 0){
+					Hmin = (force*length/2 - mass*gravity*width/2 - frictionstill*length/2)/force;
+					Hmax = (force*length/2 + mass*gravity*width/2 - frictionstill*length/2)/force;
+				}
 				if (radius > Hmax) //faller framåt
 				{
 					acce = (1/inertia)*(force*radius) + gravity*mass*Math.cos(angle);
@@ -253,7 +263,7 @@
 				else //Translaterar endast
 				{
 					//Insert code here
-					if(Math.cos(angle)*force >= frictionStill)
+					if(Math.cos(angle)*force >= frictionstill)
 					{
 						acce = 1/mass*Math.cos(angle)*force - frictionMove*velocity;
 						velocity = velocity + step*acce;
@@ -269,6 +279,7 @@
         //objectTranslation.position.y = objectTranslation.position.y*Math.sin(angle);
 				// Render the scene
 				renderer.render( scene, camera );
+				force = 0;
 			}
 			
 			function animate() 
