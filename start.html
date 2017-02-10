@@ -12,6 +12,7 @@
 		<!-- <script src="three.min.js"></script> -->
 		<script src="three.js"></script>
 		<script>
+			
 			// Lots of global variables. (This is JavaScript. No use complaining.)
 			var container;
 			var camera, scene, renderer;
@@ -26,11 +27,24 @@
 			var sceneRoot = new THREE.Group();
 			var block;
 			var plan;
-
-			var acce = 0, velocity = 0, angle = Math.PI/2;
-
+			var geom;
+			var v0,v1,v2,v3,v4,v5,v6,v7;
+			var object; //3D
+			var golv; //3D
 			
-			function onWindowResize() {
+			var acce = 0, velocity = 0, angle = Math.PI/2;
+			
+			//Translation x-led
+			var accx = 0, velx = 0, posx;
+			
+			//Translation y-led
+			var accy = 0, vely = 0, posy = 0;
+			
+			var Hmax, Hmin;
+			var force = 10000;
+			
+			function onWindowResize() 
+			{
 				windowHalfX = window.innerWidth / 2;
 				windowHalfY = window.innerHeight / 2;
 				camera.aspect = window.innerWidth / window.innerHeight;
@@ -38,97 +52,162 @@
 				renderer.setSize( window.innerWidth, window.innerHeight );
 			}
 			
-			function init() {
-
+			function init() 
+			{
 				container = document.getElementById( 'container' );
-
 				camera = new THREE.PerspectiveCamera( 60, window.innerWidth/window.innerHeight, 0.1, 100 );
 				camera.position.z = 10;
-
 				scene = new THREE.Scene();
 								
-
 				// MESH block
 				var geometryBlock = new THREE.PlaneGeometry( 2, 2 );
 				var materialBlock = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: false });
 				//materialBlock.wireframe = true;
 				block = new THREE.Mesh( geometryBlock, materialBlock );
+				// MESH object 3D ----------------------------------------------------
+				var meshMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
+				meshMaterial.wireframe = true;
+				geom = new THREE.Geometry(); 
+				v0 = new THREE.Vector3(-2,-2,-2);
+				v1 = new THREE.Vector3( 2,-2,-2);
+				v2 = new THREE.Vector3( 2,-2, 1);
+				v3 = new THREE.Vector3(-2,-2, 1);
+				v4 = new THREE.Vector3(-2, 4,-2);
+				v5 = new THREE.Vector3( 2, 4,-2);
+				v6 = new THREE.Vector3( 2, 4, 1);
+				v7 = new THREE.Vector3(-2, 4, 1);
+				geom.vertices.push(v0);
+				geom.vertices.push(v1);
+				geom.vertices.push(v2);
+				geom.vertices.push(v3);
+				geom.vertices.push(v4);
+				geom.vertices.push(v5);
+				geom.vertices.push(v6);
+				geom.vertices.push(v7);
+				geom.faces.push( new THREE.Face3(0,1,2) ); // face0
+				geom.faces.push( new THREE.Face3(0,2,3) ); // face0
+				geom.faces.push( new THREE.Face3(1,5,6) ); // face1
+				geom.faces.push( new THREE.Face3(6,2,1) ); // face1
+				geom.faces.push( new THREE.Face3(2,7,3) ); // face2
+				geom.faces.push( new THREE.Face3(2,6,7) ); // face2
+				geom.faces.push( new THREE.Face3(0,4,5) ); // face3
+				geom.faces.push( new THREE.Face3(0,5,1) ); // face3
+				geom.faces.push( new THREE.Face3(0,3,4) ); // face4
+				geom.faces.push( new THREE.Face3(3,7,4) ); // face4
+				geom.faces.push( new THREE.Face3(4,7,5) ); // face5
+				geom.faces.push( new THREE.Face3(5,7,6) ); // face5
+				geom.computeFaceNormals();
+				geom.computeVertexNormals();
+				object = new THREE.Mesh( geom,meshMaterial);
+				object.doubleSided = true;
 				
-				// MESH line
+				// MESH golv 3D ---------------------------------------------------
+				var geometryGolv = new THREE.BoxGeometry(16,0.1,10); 
+				var materialGolv = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+				materialGolv.wireframe = true;
+				golv = new THREE.Mesh(geometryGolv, materialPlan); 
+				
+				// MESH line 2D ---------------------------------------------------
 				var geometryPlan = new THREE.PlaneGeometry(20,1); 
 				var materialPlan = new THREE.MeshBasicMaterial();
 				materialPlan.wireframe = true;
 				plan = new THREE.Mesh(geometryPlan, materialPlan); 
-
-
-
+				
 				// Top-level node
 				scene.add( sceneRoot );
-
+				
 				// Sun branch
-				sceneRoot.add( block ); //New node for translation transformation
-				sceneRoot.add(plan); 
-
-
+				sceneRoot.add( block );
+				sceneRoot.add( object ); //New node for translation transformation
+				sceneRoot.add(golv); 
+				
 				renderer = new THREE.WebGLRenderer();
 				renderer.setClearColor( 0x000000 );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				container.appendChild( renderer.domElement );
-
 				window.addEventListener( 'resize', onWindowResize, false );
 			}
 			
-			function render() {	
+			function render()
+      {				
+				//Hur man ändrar position på ett vertice
+				//geom.vertices[2].x = 3;
+					
 				var gravity = 9.82;	
 				var step = 1/400;	
 				
 				// Variabler för att räkna ut acceleration, hastighet och vinkel
 				//Kraftpåverkande konstanter
-				var force = 100;
 				var radius = 1;
 				var forceangle = 1;
 				
-				//Blockets konstanter 
+				//Blockets konstanter  <-- ATT GÖRA: Räkna ut längden och bredden beroende på verices-->
 				var mass = 5;
 				var length = 1;
 				var width = 1;
 				var inertia = mass/3*(length*length+width*width) //tröghetsmoment
-
+				var length2 = Math.abs(geom.vertices[4].y - geom.vertices[0].y);
+				var width2 = Math.abs(geom.vertices[2].z - geom.vertices[1].z)
+				console.log(width2);
 				
 				//Konstanter mellan block och golv
 				var frictionstill = 0.5;
 				var frictionmove = 0.2
 				var CoR = 0.5; // ett tal mellan 0-1, studskoefficient
-
 				
 				// Set up the camera
 				camera.position.x = 0;
 				camera.position.y = -mouseY*10;
 				camera.lookAt( scene.position );
 				
-
-				//Startposition för blockets mittpunkt
-
+        //Startposition för blockets mittpunkt
 				block.position.x = 0;
-				block.position.y = -1.5; 
+				block.position.y = -1; 
 				
 				plan.position.x = 0;
-				plan.position.y = -3; 
+				plan.position.y = -3;
+				
+				golv.position.x = 0;
+				golv.position.y = -2.1;
 				
 				delta = clock.getDelta();
 				
+				//posy = block.position.y;
+				posx = block.position.x;
+				
+				//Startposition för punkt längst ner till höger
+				//posy = geom.vertices[2].y;
+				//posx = geom.geometry.vertices[2].position.x;
+				/*for(idx = 1; idx<7; idx++)
+				{
+					if(geom.vertices[idx].y < posy)
+					{
+						posy = geom.vertices[idx].y;
+					}
+					if(geom.vertices[idx].x > posx)
+					{
+						posx = geom.vertices[idx].x;
+					}
+					
+				}*/
+				
+			
 				// Perform animations
 				//objectTranslation.position.x = 3.0;
 				//objectTranslation.position.y = 10.0*Math.sin(delta);
 				//objectSpin.rotation.y += 0.02;
 				
-				//Om radie < Hmin -> tippar bakåt, Om radie > Hmax -> tippar framåt
-				var Hmin = (force*length/2 - mass*gravity*width/2 - frictionstill*length/2)/force;
-				var Hmax = (force*length/2 + mass*gravity*width/2 - frictionstill*length/2)/force;
-				//window.alert(Hmin + ' och ' + Hmax); <- om man vill skriva ut något
 				//Räknar ut acceleration, hastighet och vinkel
-
+				//acce = (1/inertia)*(force*radius) + gravity*mass*Math.cos(angle);
+				//velocity = velocity + step*acce;
+				//angle = angle - Math.abs(step*velocity);
+				//objectTranslation.position.x = geometryBox.x*Math.cos(angle);
+				//Om radie < Hmin -> tippar bakåt, Om radie > Hmax -> tippar framåt
+				if(force != 0){
+					Hmin = (force*length/2 - mass*gravity*width/2 - frictionstill*length/2)/force;
+					Hmax = (force*length/2 + mass*gravity*width/2 - frictionstill*length/2)/force;
+				}
 				if (radius > Hmax) //faller framåt
 				{
 					acce = (1/inertia)*(force*radius) + gravity*mass*Math.cos(angle);
@@ -139,6 +218,26 @@
 					{
 						angle = 0;
 						velocity = -velocity*CoR;
+					}
+					
+					//Translation i x-led
+					if(Math.cos(angle)*force >= frictionstill)
+					{
+						accx = 1/mass*(Math.cos(forceangle)*force - frictionmove*velx);
+						velx = velx + step*accx;
+						posx = posx + step*velx;
+						//window.alert('I if-sats' + posx);
+						//block.position.x = posx;
+					}
+					
+					//Translation i y-led
+					if(posy > -1)
+					{
+						accy = 1/mass*Math.sin(forceangle)*(force-gravity*mass)
+						vely = vely + step*accy;
+						posy = posy + step*vely;
+						block.position.y = posy;
+						//window.alert('I if-sats' + posy);
 					}
 					
 					//Temporär, men det ser snyggare ut
@@ -161,7 +260,7 @@
 				else //Translaterar endast
 				{
 					//Insert code here
-					if(Math.cos(angle)*force >= frictionStill)
+					if(Math.cos(angle)*force >= frictionstill)
 					{
 						acce = 1/mass*Math.cos(angle)*force - frictionMove*velocity;
 						velocity = velocity + step*acce;
@@ -174,13 +273,14 @@
 				//Roterar runt z-axeln
 				block.rotation.z = angle;
 				
-
-				//objectTranslation.position.y = objectTranslation.position.y*Math.sin(angle);
+        //objectTranslation.position.y = objectTranslation.position.y*Math.sin(angle);
 				// Render the scene
 				renderer.render( scene, camera );
+				force = 0;
 			}
-
-			function animate() {
+			
+			function animate() 
+			{
 				requestAnimationFrame( animate ); // Request to be called again for next frame
 				render();
 			}
