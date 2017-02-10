@@ -26,7 +26,9 @@
 			var sceneRoot = new THREE.Group();
 			var block;
 			var plan;
-			var acce = 0, velocity = 0, angle = 3.1415/2;
+
+			var acce = 0, velocity = 0, angle = Math.PI/2;
+
 			
 			function onWindowResize() {
 				windowHalfX = window.innerWidth / 2;
@@ -150,25 +152,39 @@
 				window.addEventListener( 'resize', onWindowResize, false );
 			}
 			
-			function render() {			
+			function render() {	
+				var gravity = 9.82;	
+				var step = 1/400;	
 				
 				// Variabler för att räkna ut acceleration, hastighet och vinkel
-				var force = 1;
-				var radius = 0.1;
-				var mass = 0.01;
-				var length = 0.1;
-				var width = 0.1;
-				var gravity = 9.82;
+				//Kraftpåverkande konstanter
+				var force = 100;
+				var radius = 1;
+				var forceangle = 1;
+				
+				//Blockets konstanter 
+				var mass = 5;
+				var length = 1;
+				var width = 1;
 				var inertia = mass/3*(length*length+width*width) //tröghetsmoment
-				var step = 1/1000;
+
+				
+				//Konstanter mellan block och golv
+				var frictionstill = 0.5;
+				var frictionmove = 0.2
+				var CoR = 0.5; // ett tal mellan 0-1, studskoefficient
+
 				
 				// Set up the camera
 				camera.position.x = 0;
 				camera.position.y = -mouseY*10;
 				camera.lookAt( scene.position );
 				
+
+        //Startposition för blockets mittpunkt
 				//block.position.x = 0;
 				//block.position.y = -1.5; 
+
 				
 				plan.position.x = 0;
 				plan.position.y = -3; 
@@ -180,15 +196,63 @@
 				//objectTranslation.position.y = 10.0*Math.sin(delta);
 				//objectSpin.rotation.y += 0.02;
 				
+				//Om radie < Hmin -> tippar bakåt, Om radie > Hmax -> tippar framåt
+				var Hmin = (force*length/2 - mass*gravity*width/2 - frictionstill*length/2)/force;
+				var Hmax = (force*length/2 + mass*gravity*width/2 - frictionstill*length/2)/force;
+				//window.alert(Hmin + ' och ' + Hmax); <- om man vill skriva ut något
 				//Räknar ut acceleration, hastighet och vinkel
-				acce = (1/inertia)*(force*radius) + gravity*mass*Math.cos(angle);
-				velocity = velocity + step*acce;
-				angle = angle - Math.abs(step*velocity);
-				//objectTranslation.position.x = geometryBox.x*Math.cos(angle);
+
+				if (radius > Hmax) //faller framåt
+				{
+					acce = (1/inertia)*(force*radius) + gravity*mass*Math.cos(angle);
+					velocity = velocity + step*acce;
+					angle = angle - step*velocity;
+					
+					if(angle < 0)
+					{
+						angle = 0;
+						velocity = -velocity*CoR;
+					}
+					
+					//Temporär, men det ser snyggare ut
+					block.position.x = -angle;
+					
+				}
+				else if(radie < Hmin) //Roterar bakåt
+				{
+					acce = (1/inertia)*(force*radius) + gravity*mass*Math.cos(angle);
+					velocity = velocity + step*acce;
+					angle = angle + step*velocity;
+					
+					if(angle > Math.PI)
+					{
+						angle = 0;
+						velocity = -velocity*CoR;
+					}
+					
+				}
+				else //Translaterar endast
+				{
+					//Insert code here
+					if(Math.cos(angle)*force >= frictionStill)
+					{
+						acce = 1/mass*Math.cos(angle)*force - frictionMove*velocity;
+						velocity = velocity + step*acce;
+						
+						
+					}
+					
+				}
+				
+				//Roterar runt z-axeln
+				block.rotation.z = angle;
+				
+
 				//objectTranslation.position.y = objectTranslation.position.y*Math.sin(angle);
 				// Render the scene
 				renderer.render( scene, camera );
 			}
+
 			function animate() {
 				requestAnimationFrame( animate ); // Request to be called again for next frame
 				render();
