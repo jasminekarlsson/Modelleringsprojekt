@@ -35,6 +35,7 @@
 			var acce = 0, velocity = 0, angle = Math.PI/2;
 			
 			//Translation x-led
+
 			var accx = 0, velx = 0, posx = 0;
 		
 			//Translation y-led
@@ -48,6 +49,7 @@
 			var Hmin;
 			var Hmax;
 			
+
 			function onWindowResize() 
 			{
 				windowHalfX = window.innerWidth / 2;
@@ -72,6 +74,7 @@
 				// MESH object 3D ----------------------------------------------------
 				var meshMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
 				meshMaterial.wireframe = true;
+
 				var geom = new THREE.Geometry(); 
 				var v0 = new THREE.Vector3(-2,-2,-2);
 				var v1 = new THREE.Vector3( 2,-2,-2);
@@ -81,6 +84,7 @@
 				var v5 = new THREE.Vector3( 2, 2,-2);
 				var v6 = new THREE.Vector3( 2, 2, 2);
 				var v7 = new THREE.Vector3(-2, 2, 2);
+
 				geom.vertices.push(v0);
 				geom.vertices.push(v1);
 				geom.vertices.push(v2);
@@ -139,6 +143,7 @@
 				//Hur man ändrar position på ett vertice
 				//geom.vertices[2].x = 3;
 
+
 				var gravity = 9.82;	
 				var step = 1/120;	
 				
@@ -146,16 +151,20 @@
 				//Kraftpåverkande konstanter
 				var radius = 0.2;
 				var forceangle = 0;
+
 				
 				//Blockets konstanter  <-- ATT GÖRA: Räkna ut längden och bredden beroende på verices-->
 				var mass = 5;
 				var length = 1;
 				var width = 1;
 				var inertia = mass/3*(length*length+width*width) //tröghetsmoment
+
+				var length2 = Math.abs(geom.vertices[4].y - geom.vertices[0].y);
+				var width2 = Math.abs(geom.vertices[2].z - geom.vertices[1].z)
 				
 				//Konstanter mellan block och golv
-				var frictionStill = 5;
-				var frictionmove = 3;
+				var frictionstill = 0.5;
+				var frictionmove = 0.2
 				var CoR = 0.5; // ett tal mellan 0-1, studskoefficient
 				
 				// Set up the camera
@@ -163,8 +172,8 @@
 				camera.position.y = -mouseY*10;
 				camera.lookAt( scene.position );
 				
-        //Startposition för planets och golvets mittpunkt
-				
+
+        //Startposition för planets och golvets mittpunkt				
 				plan.position.x = 0;
 				plan.position.y = -3;
 				
@@ -175,6 +184,8 @@
 
 				//console.log(posy);
 				
+
+
 				//Startposition för punkt längst ner till höger
 				//posy = geom.vertices[2].y;
 				//posx = geom.geometry.vertices[2].position.x;
@@ -200,13 +211,14 @@
 				//Räknar ut acceleration, hastighet och vinkel
 				//acce = (1/inertia)*(force*radius) + gravity*mass*Math.cos(angle);
 				//velocity = velocity + step*acce;
-				//angle = angle - Math.abs(step*velocity);w
+
+				//angle = angle - Math.abs(step*velocity);
 				//objectTranslation.position.x = geometryBox.x*Math.cos(angle);
 				//Om radie < Hmin -> tippar bakåt, Om radie > Hmax -> tippar framåt
+
 				if(force != 0){
-					Hmin = (forceInit*length/2 - mass*gravity*width/2 - frictionStill*length/2)/force;
-					Hmax = (forceInit*length/2 + mass*gravity*width/2 - frictionStill*length/2)/force;
-					console.log('Hmin = ' + Hmin + ', Hmax = ' + Hmax);
+					Hmin = (force*length/2 - mass*gravity*width/2 - frictionstill*length/2)/force;
+					Hmax = (force*length/2 + mass*gravity*width/2 - frictionstill*length/2)/force;
 				}
 				if (radius > Hmax) //faller framåt
 				{
@@ -214,6 +226,7 @@
 					velocity = velocity + step*acce;
 					angle = angle - step*velocity;
 					
+
 					if(angle < 0 && posy <= -1)
 					{
 						angle = 0; 
@@ -235,6 +248,7 @@
 						// Beräknar positionen i x-led
 						posx = posx + step*velx;
 	
+
 					}
 					
 					//Translation i y-led
@@ -278,10 +292,12 @@
 						vely = -vely * CoR;	
 						posy = posy + step*vely;
 					}					
+
 				}
 				else //Translaterar endast
 				{
 					//Insert code here
+
 					if(Math.cos(angle)*force >= frictionStill)
 					{
 						acce = 1/mass*Math.cos(angle)*force - frictionMove*velocity;
@@ -324,7 +340,6 @@
 						posy = posy + step*vely;
 						//console.log('studspositionen för y: ' + posy);
 					}
-
 				}
 				
 				//Roterar runt z-axeln
@@ -336,9 +351,11 @@
 				// Sätter kraften till 0 eftersom det endast är en impuls
 				force = 0;
 
+
         //objectTranslation.position.y = objectTranslation.position.y*Math.sin(angle);
 				// Render the scene
 				renderer.render( scene, camera );
+				force = 0;
 			}
 			
 			function animate() 
@@ -347,8 +364,7 @@
 				render();
 
 			}
-			
-			
+		
 			init();    // Set up the scene
 			animate(); // Enter an infinite loop
 			window.requestAnimationFrame(animate);
