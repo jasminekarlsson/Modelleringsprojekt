@@ -32,7 +32,6 @@
 			var object; //3D
 			var golv; //3D
 			var block3D; 
-
 			
 			var acce = 0, velocity = 0, angle = Math.PI/2;
 			
@@ -51,7 +50,7 @@
 			//Define Hmin/Hmax
 			var Hmin;
 			var Hmax;
-			
+
 			function onWindowResize() 
 			{
 				windowHalfX = window.innerWidth / 2;
@@ -76,6 +75,7 @@
 				// MESH object 3D ----------------------------------------------------
 				var meshMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
 				meshMaterial.wireframe = true;
+
 				geom = new THREE.Geometry(); 
 				v0 = new THREE.Vector4(-2,-2,-2, 1);
 				v1 = new THREE.Vector4( 2,-2,-2, 1);
@@ -85,6 +85,7 @@
 				v5 = new THREE.Vector4( 2, 2,-2, 1);
 				v6 = new THREE.Vector4( 2, 2, 2, 1);
 				v7 = new THREE.Vector4(-2, 2, 2, 1);
+
 				geom.vertices.push(v0);
 				geom.vertices.push(v1);
 				geom.vertices.push(v2);
@@ -152,15 +153,14 @@
 			}
 			
 			function render()
-      {				
-				//Hur man ändrar position på ett vertice
-				//geom.vertices[2].x = 3;
+      {			
 
 				var gravity = 9.82;	
 				var step = 1/120;	
 				
 				// Variabler för att räkna ut acceleration, hastighet och vinkel
 				//Kraftpåverkande konstanter
+
 				var radius = 0.2;
 				var forceangle = 0;
 				
@@ -179,43 +179,16 @@
 				camera.position.x = 0;
 				camera.position.y = -mouseY*10;
 				camera.lookAt( scene.position );
-				
-        //Startposition för planets och golvets mittpunkt
-				
+
+        //Startposition för planets och golvets mittpunkt				
 				plan.position.x = 0;
 				plan.position.y = -3;
 				
 				golv.position.x = 0;
 				golv.position.y = -2.1;
 				
-				delta = clock.getDelta();
-
-				//console.log(posy);
-				
-				//Startposition för punkt längst ner till höger
-				//posy = geom.vertices[2].y;
-				//posx = geom.geometry.vertices[2].position.x;
-				/*for(idx = 1; idx<7; idx++)
-				{
-					if(geom.vertices[idx].y < posy)
-					{
-						posy = geom.vertices[idx].y;
-					}
-					if(geom.vertices[idx].x > posx)
-					{
-						posx = geom.vertices[idx].x;
-					}
-					
-				}*/
-				
-			
-				// Perform animations
-				//objectTranslation.position.x = 3.0;
-				//objectTranslation.position.y = 10.0*Math.sin(delta);
-				//objectSpin.rotation.y += 0.02;
-				
 				//Räknar ut acceleration, hastighet och vinkel
-				//acce = (1/inertia)*(force*radius) + gravity*mass*Math.cos(angle);
+				acce = (1/inertia)*(force*radius) + gravity*mass*Math.cos(angle);
 				//velocity = velocity + step*acce;
 				//angle = angle - Math.abs(step*velocity);w
 				//objectTranslation.position.x = geometryBox.x*Math.cos(angle);
@@ -231,6 +204,7 @@
 					velocity = velocity + step*acce;
 					angle = angle - step*velocity;
 					
+          //När blocket når marken --> studs
 					if(angle < 0 && posy <= -1)
 					{
 						angle = 0; 
@@ -251,7 +225,7 @@
 						velx = velx + step*accx;
 						// Beräknar positionen i x-led
 						posx = posx + step*velx;
-	
+
 					}
 					
 					//Translation i y-led
@@ -267,6 +241,7 @@
 						posy = posy + step*vely;
 						//console.log('y hastighet: ' + vely);
 					}	
+
 				}
 				else if(radius < Hmin) //Roterar bakåt
 				{
@@ -368,8 +343,31 @@
 				//Uppdaterar blocket
 				block3D.updateMatrix();
 				
+				
+				rotmat.makeRotationZ(-10*step*angle);
+				trans1mat.makeTranslation(-2,2,-2);
+				trans2mat.makeTranslation(2,-2,2);
+				
+				
 				//Roterar runt z-axeln
 				block.rotation.z = angle;
+
+				if(geom.vertices[1].x < 20)
+				{
+					for(idx = 0; idx<8; idx++)
+					{
+						geom.vertices[idx].applyMatrix4(trans1mat);
+						geom.vertices[idx].applyMatrix4(rotmat);
+						geom.vertices[idx].applyMatrix4(trans2mat);
+						
+					}
+				}
+				
+				//Uppdaterar vertice
+				geom.verticesNeedUpdate = true;
+				//Uppdaterar blocket
+				block3D.updateMatrix();
+
 				// Sätter positionen till att vara blockets x-position
 				block.position.x = posx;
 				// Sätter positionen till att vara blockets x-position
@@ -378,6 +376,7 @@
 				force = 0;
 
         //objectTranslation.position.y = objectTranslation.position.y*Math.sin(angle);
+
 				// Render the scene
 				renderer.render( scene, camera );
 			}
@@ -395,5 +394,9 @@
 			window.requestAnimationFrame(animate);
 			
 		</script>
+	
+	
+	
+	
 	</body>
 </html>
