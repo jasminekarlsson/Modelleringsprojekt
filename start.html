@@ -36,13 +36,21 @@
 			var acce = 0, velocity = 0, angle = Math.PI/2;
 			
 			//Translation x-led
-			var accx = 0, velx = 0, posx;
-			
+
+			var accx = 0, velx = 0, posx = 0;
+		
 			//Translation y-led
-			var accy = 0, vely = 0, posy;
-			
+			var accy = 0, vely = 0, posy = -1;
+
+			//Start value Force
+			var force = 100;
+			var forceInit = force;
+
+			//Define Hmin/Hmax
+			var Hmin;
+			var Hmax;
 			var rotmat, trans1mat, trans2mat;
-			
+
 			function onWindowResize() 
 			{
 				windowHalfX = window.innerWidth / 2;
@@ -67,6 +75,7 @@
 				// MESH object 3D ----------------------------------------------------
 				var meshMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
 				meshMaterial.wireframe = true;
+
 				geom = new THREE.Geometry(); 
 				v0 = new THREE.Vector4(-2,-2,-2, 1);
 				v1 = new THREE.Vector4( 2,-2,-2, 1);
@@ -76,6 +85,7 @@
 				v5 = new THREE.Vector4( 2, 2,-2, 1);
 				v6 = new THREE.Vector4( 2, 2, 2, 1);
 				v7 = new THREE.Vector4(-2, 2, 2, 1);
+
 				geom.vertices.push(v0);
 				geom.vertices.push(v1);
 				geom.vertices.push(v2);
@@ -143,22 +153,24 @@
 			}
 			
 			function render()
-      {	
-				
+      {			
 				var gravity = 9.82;	
-				var step = 1/400;	
+				var step = 1/120;	
 				
 				// Variabler för att räkna ut acceleration, hastighet och vinkel
 				//Kraftpåverkande konstanter
-				var force = 100;
-				var radius = 1;
-				var forceangle = 1;
+
+				var radius = 0.2;
+				var forceangle = 0;
 				
 				//Blockets konstanter  <-- ATT GÖRA: Räkna ut längden och bredden beroende på verices-->
 				var mass = 5;
 				var length = 1;
 				var width = 1;
 				var inertia = mass/3*(length*length+width*width) //tröghetsmoment
+
+				var length2 = Math.abs(geom.vertices[4].y - geom.vertices[0].y);
+				var width2 = Math.abs(geom.vertices[2].z - geom.vertices[1].z)
 				
 				//Konstanter mellan block och golv
 				var frictionstill = 0.5;
@@ -169,96 +181,150 @@
 				camera.position.x = 0;
 				camera.position.y = -mouseY*10;
 				camera.lookAt( scene.position );
-				
-        		//Startposition för blockets mittpunkt
-				block.position.x = 0;
-				block.position.y = -1; 
-				
+
+
+        //Startposition för planets och golvets mittpunkt				
 				plan.position.x = 0;
 				plan.position.y = -3;
 				
 				golv.position.x = 0;
 				golv.position.y = -2.1;
 				
+
 				//Räknar ut acceleration, hastighet och vinkel
 				acce = (1/inertia)*(force*radius) + gravity*mass*Math.cos(angle);
 				//velocity = velocity + step*acce;
+
 				//angle = angle - Math.abs(step*velocity);
 				//objectTranslation.position.x = geometryBox.x*Math.cos(angle);
 				//Om radie < Hmin -> tippar bakåt, Om radie > Hmax -> tippar framåt
-				var Hmin = (force*length/2 - mass*gravity*width/2 - frictionstill*length/2)/force;
-				var Hmax = (force*length/2 + mass*gravity*width/2 - frictionstill*length/2)/force;
+
+				if(force != 0){
+					Hmin = (force*length/2 - mass*gravity*width/2 - frictionstill*length/2)/force;
+					Hmax = (force*length/2 + mass*gravity*width/2 - frictionstill*length/2)/force;
+				}
 				if (radius > Hmax) //faller framåt
 				{
 					acce = (1/inertia)*(force*radius) + gravity*mass*Math.cos(angle);
 					velocity = velocity + step*acce;
 					angle = angle - step*velocity;
 					
+
 					//När blocket når marken --> studs
-					if(angle < 0)
+
+					if(angle < 0 && posy <= -1)
 					{
-						angle = 0;
+						angle = 0; 
 						velocity = -velocity*CoR;
 					}
 					
 					//Translation i x-led
-					if(Math.cos(angle)*force >= frictionstill)
+					if(Math.cos(forceangle)*forceInit >= frictionStill)
 					{
-						accx = 1/mass*(Math.cos(forceangle)*force - frictionmove*velx);
-						velx = velx + step*accx;
-						posx = posx + step*velx;
-						//window.alert('I if-sats' + posx);
-						block.position.x = posx;
-						for(idx = 1; idx<8; idx++)
-						{
-							//geom.vertices[idx].x = geom.vertices[idx].x + step*velx;
-							//console.log('Hej');	
+						// Beräknar accelerationen i x-led
+								// Om den är i luften
+						if(posy > -1){
+							accx = 1/mass*((Math.cos(forceangle)*force));
+						}else{	// Om den är på marken
+							accx = 1/mass*((Math.cos(forceangle)*force) - frictionmove*velx);
 						}
+						// Beräknar hastigheten i x-led
+						velx = velx + step*accx;
+						// Beräknar positionen i x-led
+						posx = posx + step*velx;
+
 					}
 					
 					//Translation i y-led
 					if(posy > -1)
 					{
-						accy = 1/mass*Math.sin(forceangle)*(force-gravity*mass)
+						accy = 1/mass*((Math.sin(forceangle)*force)-gravity*mass);
 						vely = vely + step*accy;
 						posy = posy + step*vely;
-						block.position.y = posy;
+						//console.log('position y-led: ' + posy);
 						//window.alert('I if-sats' + posy);
-						for(idx = 1; idx<8; idx++)
-						{
-							geom.vertices[idx].y = geom.vertices[idx].y + step*vely;
-							//console.log('Hej');	
-						}
-					}
-					
-					//Temporär, men det ser snyggare ut
-					block.position.x = -angle;
-					
+					}else{
+						vely = -vely * CoR;	
+						posy = posy + step*vely;
+						//console.log('y hastighet: ' + vely);
+					}	
+
 				}
-				else if(radie < Hmin) //Roterar bakåt
+				else if(radius < Hmin) //Roterar bakåt
 				{
-					acce = (1/inertia)*(force*radius) + gravity*mass*Math.cos(angle);
-					velocity = velocity + step*acce;
-					angle = angle + step*velocity;
 					
-					if(angle > Math.PI)
+					m = 1;
+					M = 1;
+					//Vinkelacceleration 
+					acce = ((M+m)*(gravity*Math.sin(angle)-frictionmove*velocity)- (length*m*velocity*Math.sin(angle+force))*Math.cos(angle))/(length*(M+(1-Math.cos(angle)*Math.cos(angle))*m));
+					velocity = velocity + step * acce;
+					angle = angle + step * velocity;
+
+					// Translation x-led
+					accx = ((-m*gravity*Math.sin(angle)*Math.cos(angle) + m*length*velocity*velocity*Math.sin(angle)+force))/(M+(1-Math.cos(angle)*Math.cos(angle))*m) - frictionmove*velx;
+					velx = velx + step*accx;
+					posx = posx + step*velx;
+
+					//Translation i y-led
+					if(posy > -1)
 					{
-						angle = 0;
-						velocity = -velocity*CoR;
-					}
-					
+						accy = 1/mass*((Math.sin(forceangle)*force)-gravity*mass);
+						vely = vely + step*accy;
+						posy = posy + step*vely;
+						//console.log('position y-led: ' + posy);
+						//window.alert('I if-sats' + posy);
+					}else{
+						vely = -vely * CoR;	
+						posy = posy + step*vely;
+					}					
+
 				}
 				else //Translaterar endast
 				{
 					//Insert code here
+
 					if(Math.cos(angle)*force >= frictionStill)
 					{
 						acce = 1/mass*Math.cos(angle)*force - frictionMove*velocity;
-						velocity = velocity + step*acce;
-						
-						
+						velocity = velocity + step*acce;	
 					}
 					
+					if(angle < 0 && posy <= -1)
+					{
+						angle = 0; 
+						velocity = -velocity*CoR*10;
+					}
+					
+					//Translation i x-led
+					if(Math.cos(forceangle)*forceInit >= frictionStill)
+					{
+						// Beräknar accelerationen i x-led
+								// Om den är i luften
+						if(posy > -1){
+							accx = 1/mass*((Math.cos(forceangle)*force));
+						}else{	// Om den är på marken
+							accx = 1/mass*((Math.cos(forceangle)*force) - frictionmove*velx);
+						}
+						// Beräknar hastigheten i x-led
+						velx = velx + step*accx;
+						// Beräknar positionen i x-led
+						posx = posx + step*velx;
+	
+					}
+					
+					//Translation i y-led
+					if(posy > -1)
+					{
+						accy = 1/mass*((Math.sin(forceangle)*force)-gravity*mass);
+						vely = vely + step*accy;
+						posy = posy + step*vely;
+						//console.log('position y-led: ' + posy);
+						//window.alert('I if-sats' + posy);
+					}else{
+						vely = -vely * CoR;	
+						posy = posy + step*vely;
+						//console.log('studspositionen för y: ' + posy);
+					}
 				}
 				
 				
@@ -269,6 +335,7 @@
 				
 				//Roterar runt z-axeln
 				block.rotation.z = angle;
+
 				if(geom.vertices[1].x < 20)
 				{
 					for(idx = 0; idx<8; idx++)
@@ -284,18 +351,32 @@
 				geom.verticesNeedUpdate = true;
 				//Uppdaterar blocket
 				block3D.updateMatrix();
+
+				// Sätter positionen till att vara blockets x-position
+				block.position.x = posx;
+				// Sätter positionen till att vara blockets x-position
+				block.position.y = posy;
+				// Sätter kraften till 0 eftersom det endast är en impuls
+				force = 0;
+
+
+        //objectTranslation.position.y = objectTranslation.position.y*Math.sin(angle);
+
 				// Render the scene
 				renderer.render( scene, camera );
+				force = 0;
 			}
 			
 			function animate() 
 			{
 				requestAnimationFrame( animate ); // Request to be called again for next frame
 				render();
+
 			}
-			
+		
 			init();    // Set up the scene
 			animate(); // Enter an infinite loop
+			window.requestAnimationFrame(animate);
 			
 		</script>
 	
