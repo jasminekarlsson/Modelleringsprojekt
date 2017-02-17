@@ -31,15 +31,18 @@
 			var v0,v1,v2,v3,v4,v5,v6,v7;
 			var object; //3D
 			var golv; //3D
+			var block3D; 
+
 			
 			var acce = 0, velocity = 0, angle = Math.PI/2;
 			
 			//Translation x-led
-
 			var accx = 0, velx = 0, posx = 0;
 		
 			//Translation y-led
 			var accy = 0, vely = 0, posy = -1;
+
+			var rotmat, trans1mat, trans2mat;
 
 			//Start value Force
 			var force = 100;
@@ -49,7 +52,6 @@
 			var Hmin;
 			var Hmax;
 			
-
 			function onWindowResize() 
 			{
 				windowHalfX = window.innerWidth / 2;
@@ -74,17 +76,15 @@
 				// MESH object 3D ----------------------------------------------------
 				var meshMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
 				meshMaterial.wireframe = true;
-
-				var geom = new THREE.Geometry(); 
-				var v0 = new THREE.Vector3(-2,-2,-2);
-				var v1 = new THREE.Vector3( 2,-2,-2);
-				var v2 = new THREE.Vector3( 2,-2, 2);
-				var v3 = new THREE.Vector3(-2,-2, 2);
-				var v4 = new THREE.Vector3(-2, 2,-2);
-				var v5 = new THREE.Vector3( 2, 2,-2);
-				var v6 = new THREE.Vector3( 2, 2, 2);
-				var v7 = new THREE.Vector3(-2, 2, 2);
-
+				geom = new THREE.Geometry(); 
+				v0 = new THREE.Vector4(-2,-2,-2, 1);
+				v1 = new THREE.Vector4( 2,-2,-2, 1);
+				v2 = new THREE.Vector4( 2,-2, 2, 1);
+				v3 = new THREE.Vector4(-2,-2, 2, 1);
+				v4 = new THREE.Vector4(-2, 2,-2, 1);
+				v5 = new THREE.Vector4( 2, 2,-2, 1);
+				v6 = new THREE.Vector4( 2, 2, 2, 1);
+				v7 = new THREE.Vector4(-2, 2, 2, 1);
 				geom.vertices.push(v0);
 				geom.vertices.push(v1);
 				geom.vertices.push(v2);
@@ -109,6 +109,11 @@
 				geom.computeVertexNormals();
 				object = new THREE.Mesh( geom,meshMaterial);
 				object.doubleSided = true;
+				block3D = new THREE.Object3D();
+				block3D.add(object);
+				block3D.matrixAutoUpdate = true;
+				
+				
 				
 				// MESH golv 3D ---------------------------------------------------
 				var geometryGolv = new THREE.BoxGeometry(16,0.1,10); 
@@ -130,19 +135,26 @@
 				sceneRoot.add( object ); //New node for translation transformation
 				sceneRoot.add(golv); 
 				
+				
 				renderer = new THREE.WebGLRenderer();
 				renderer.setClearColor( 0x000000 );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				container.appendChild( renderer.domElement );
 				window.addEventListener( 'resize', onWindowResize, false );
+				
+				rotmat = new THREE.Matrix4();
+				rotmat.identity();
+				trans1mat = new THREE.Matrix4();
+				trans1mat.identity();
+				trans2mat = new THREE.Matrix4();
+				trans2mat.identity();
 			}
 			
 			function render()
       {				
 				//Hur man ändrar position på ett vertice
 				//geom.vertices[2].x = 3;
-
 
 				var gravity = 9.82;	
 				var step = 1/120;	
@@ -151,20 +163,16 @@
 				//Kraftpåverkande konstanter
 				var radius = 0.2;
 				var forceangle = 0;
-
 				
 				//Blockets konstanter  <-- ATT GÖRA: Räkna ut längden och bredden beroende på verices-->
 				var mass = 5;
 				var length = 1;
 				var width = 1;
 				var inertia = mass/3*(length*length+width*width) //tröghetsmoment
-
-				var length2 = Math.abs(geom.vertices[4].y - geom.vertices[0].y);
-				var width2 = Math.abs(geom.vertices[2].z - geom.vertices[1].z)
 				
 				//Konstanter mellan block och golv
-				var frictionstill = 0.5;
-				var frictionmove = 0.2
+				var frictionStill = 5;
+				var frictionmove = 3;
 				var CoR = 0.5; // ett tal mellan 0-1, studskoefficient
 				
 				// Set up the camera
@@ -172,8 +180,8 @@
 				camera.position.y = -mouseY*10;
 				camera.lookAt( scene.position );
 				
-
-        //Startposition för planets och golvets mittpunkt				
+        //Startposition för planets och golvets mittpunkt
+				
 				plan.position.x = 0;
 				plan.position.y = -3;
 				
@@ -184,8 +192,6 @@
 
 				//console.log(posy);
 				
-
-
 				//Startposition för punkt längst ner till höger
 				//posy = geom.vertices[2].y;
 				//posx = geom.geometry.vertices[2].position.x;
@@ -211,14 +217,13 @@
 				//Räknar ut acceleration, hastighet och vinkel
 				//acce = (1/inertia)*(force*radius) + gravity*mass*Math.cos(angle);
 				//velocity = velocity + step*acce;
-
-				//angle = angle - Math.abs(step*velocity);
+				//angle = angle - Math.abs(step*velocity);w
 				//objectTranslation.position.x = geometryBox.x*Math.cos(angle);
 				//Om radie < Hmin -> tippar bakåt, Om radie > Hmax -> tippar framåt
-
 				if(force != 0){
-					Hmin = (force*length/2 - mass*gravity*width/2 - frictionstill*length/2)/force;
-					Hmax = (force*length/2 + mass*gravity*width/2 - frictionstill*length/2)/force;
+					Hmin = (forceInit*length/2 - mass*gravity*width/2 - frictionStill*length/2)/force;
+					Hmax = (forceInit*length/2 + mass*gravity*width/2 - frictionStill*length/2)/force;
+					//console.log('Hmin = ' + Hmin + ', Hmax = ' + Hmax);
 				}
 				if (radius > Hmax) //faller framåt
 				{
@@ -226,7 +231,6 @@
 					velocity = velocity + step*acce;
 					angle = angle - step*velocity;
 					
-
 					if(angle < 0 && posy <= -1)
 					{
 						angle = 0; 
@@ -248,7 +252,6 @@
 						// Beräknar positionen i x-led
 						posx = posx + step*velx;
 	
-
 					}
 					
 					//Translation i y-led
@@ -292,12 +295,10 @@
 						vely = -vely * CoR;	
 						posy = posy + step*vely;
 					}					
-
 				}
 				else //Translaterar endast
 				{
 					//Insert code here
-
 					if(Math.cos(angle)*force >= frictionStill)
 					{
 						acce = 1/mass*Math.cos(angle)*force - frictionMove*velocity;
@@ -340,7 +341,32 @@
 						posy = posy + step*vely;
 						//console.log('studspositionen för y: ' + posy);
 					}
+
 				}
+
+				console.log('Angle = ' + angle);
+				rotmat.makeRotationZ(-10*step*angle);
+				trans1mat.makeTranslation(-2,2,-2);
+				trans2mat.makeTranslation(2,-2,2);
+				
+
+				//Roterar runt z-axeln
+				block.rotation.z = angle;
+				if(geom.vertices[1].x < 20)
+				{
+					for(idx = 0; idx<8; idx++)
+					{
+						geom.vertices[idx].applyMatrix4(trans1mat);
+						geom.vertices[idx].applyMatrix4(rotmat);
+						geom.vertices[idx].applyMatrix4(trans2mat);
+						
+					}
+				}
+				
+				//Uppdaterar vertice
+				geom.verticesNeedUpdate = true;
+				//Uppdaterar blocket
+				block3D.updateMatrix();
 				
 				//Roterar runt z-axeln
 				block.rotation.z = angle;
@@ -351,11 +377,9 @@
 				// Sätter kraften till 0 eftersom det endast är en impuls
 				force = 0;
 
-
         //objectTranslation.position.y = objectTranslation.position.y*Math.sin(angle);
 				// Render the scene
 				renderer.render( scene, camera );
-				force = 0;
 			}
 			
 			function animate() 
@@ -364,7 +388,8 @@
 				render();
 
 			}
-		
+			
+			
 			init();    // Set up the scene
 			animate(); // Enter an infinite loop
 			window.requestAnimationFrame(animate);
