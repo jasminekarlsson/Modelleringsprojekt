@@ -36,11 +36,12 @@
 			var acce = 0, velocity = 0, angle = Math.PI/2;
 			
 			//Translation x-led
-
 			var accx = 0, velx = 0, posx = 0;
 		
 			//Translation y-led
 			var accy = 0, vely = 0, posy = -1;
+
+			var rotmat, trans1mat, trans2mat;
 
 			//Start value Force
 			var force = 100;
@@ -49,7 +50,6 @@
 			//Define Hmin/Hmax
 			var Hmin;
 			var Hmax;
-			var rotmat, trans1mat, trans2mat;
 
 			function onWindowResize() 
 			{
@@ -154,6 +154,7 @@
 			
 			function render()
       {			
+
 				var gravity = 9.82;	
 				var step = 1/120;	
 				
@@ -168,20 +169,16 @@
 				var length = 1;
 				var width = 1;
 				var inertia = mass/3*(length*length+width*width) //tröghetsmoment
-
-				var length2 = Math.abs(geom.vertices[4].y - geom.vertices[0].y);
-				var width2 = Math.abs(geom.vertices[2].z - geom.vertices[1].z)
 				
 				//Konstanter mellan block och golv
-				var frictionstill = 0.5;
-				var frictionmove = 0.2
+				var frictionStill = 5;
+				var frictionmove = 3;
 				var CoR = 0.5; // ett tal mellan 0-1, studskoefficient
 				
 				// Set up the camera
 				camera.position.x = 0;
 				camera.position.y = -mouseY*10;
 				camera.lookAt( scene.position );
-
 
         //Startposition för planets och golvets mittpunkt				
 				plan.position.x = 0;
@@ -190,18 +187,16 @@
 				golv.position.x = 0;
 				golv.position.y = -2.1;
 				
-
 				//Räknar ut acceleration, hastighet och vinkel
 				acce = (1/inertia)*(force*radius) + gravity*mass*Math.cos(angle);
 				//velocity = velocity + step*acce;
-
-				//angle = angle - Math.abs(step*velocity);
+				//angle = angle - Math.abs(step*velocity);w
 				//objectTranslation.position.x = geometryBox.x*Math.cos(angle);
 				//Om radie < Hmin -> tippar bakåt, Om radie > Hmax -> tippar framåt
-
 				if(force != 0){
-					Hmin = (force*length/2 - mass*gravity*width/2 - frictionstill*length/2)/force;
-					Hmax = (force*length/2 + mass*gravity*width/2 - frictionstill*length/2)/force;
+					Hmin = (forceInit*length/2 - mass*gravity*width/2 - frictionStill*length/2)/force;
+					Hmax = (forceInit*length/2 + mass*gravity*width/2 - frictionStill*length/2)/force;
+					//console.log('Hmin = ' + Hmin + ', Hmax = ' + Hmax);
 				}
 				if (radius > Hmax) //faller framåt
 				{
@@ -209,9 +204,7 @@
 					velocity = velocity + step*acce;
 					angle = angle - step*velocity;
 					
-
-					//När blocket når marken --> studs
-
+          //När blocket når marken --> studs
 					if(angle < 0 && posy <= -1)
 					{
 						angle = 0; 
@@ -277,12 +270,10 @@
 						vely = -vely * CoR;	
 						posy = posy + step*vely;
 					}					
-
 				}
 				else //Translaterar endast
 				{
 					//Insert code here
-
 					if(Math.cos(angle)*force >= frictionStill)
 					{
 						acce = 1/mass*Math.cos(angle)*force - frictionMove*velocity;
@@ -325,7 +316,32 @@
 						posy = posy + step*vely;
 						//console.log('studspositionen för y: ' + posy);
 					}
+
 				}
+
+				console.log('Angle = ' + angle);
+				rotmat.makeRotationZ(-10*step*angle);
+				trans1mat.makeTranslation(-2,2,-2);
+				trans2mat.makeTranslation(2,-2,2);
+				
+
+				//Roterar runt z-axeln
+				block.rotation.z = angle;
+				if(geom.vertices[1].x < 20)
+				{
+					for(idx = 0; idx<8; idx++)
+					{
+						geom.vertices[idx].applyMatrix4(trans1mat);
+						geom.vertices[idx].applyMatrix4(rotmat);
+						geom.vertices[idx].applyMatrix4(trans2mat);
+						
+					}
+				}
+				
+				//Uppdaterar vertice
+				geom.verticesNeedUpdate = true;
+				//Uppdaterar blocket
+				block3D.updateMatrix();
 				
 				
 				rotmat.makeRotationZ(-10*step*angle);
@@ -359,12 +375,10 @@
 				// Sätter kraften till 0 eftersom det endast är en impuls
 				force = 0;
 
-
         //objectTranslation.position.y = objectTranslation.position.y*Math.sin(angle);
 
 				// Render the scene
 				renderer.render( scene, camera );
-				force = 0;
 			}
 			
 			function animate() 
@@ -373,7 +387,8 @@
 				render();
 
 			}
-		
+			
+			
 			init();    // Set up the scene
 			animate(); // Enter an infinite loop
 			window.requestAnimationFrame(animate);
