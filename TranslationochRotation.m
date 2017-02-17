@@ -87,7 +87,10 @@ for index = 1:values-1
         acce(1,index) = (1/troghet)*(force(index)*radie) + gravity*mass*cos(vinkel(index));
         hastighet(1,index+1) = hastighet(index) + step*acce(index);
         vinkel(1,index+1) = (vinkel(index) - (step*hastighet(index)));
-        
+        if vinkel(1,index) < 0
+            vinkel(1,index+1) = 0;
+            hastighet(1,index+1) = -hastighet(index)*CoR;
+        end
         % Translation i x-led
         if ( cos(forceAngle) * force(1) >= frictionStill)
             accx(index) = 1/mass * ((cos(forceAngle) * force(index)) - frictionMove * velx(index));
@@ -109,10 +112,7 @@ for index = 1:values-1
             vely(index+1) = 0;
             posy(index+1) = 0;
         end
-        if vinkel(1,index) < 0
-            vinkel(1,index+1) = 0;
-            hastighet(1,index+1) = -hastighet(index)*CoR;
-        end
+        
     else % Translateras endast
         vinkel(1,index) = 0;
         hastighet(1,index) = 0;
