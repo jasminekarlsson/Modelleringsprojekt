@@ -47,17 +47,6 @@
 			//Define Hmin/Hmax
 			var Hmin;
 			var Hmax;
-
-
-
-			////////////////////////////
-			//	OBS TEST RENDERA FPS ///
-			////////////////////////////
-			var start = window.animationTime;
-			var rate = 10; // Hz
-			var duration = 10; // s
-			var lastFrameNumber;
-	
 			
 			function onWindowResize() 
 			{
@@ -264,7 +253,7 @@
 				}
 				else if(radius < Hmin) //Roterar bakåt
 				{
-					console.log('Jag är på rätt ställe');
+					
 					m = 1;
 					M = 1;
 					//Vinkelacceleration 
@@ -288,56 +277,7 @@
 					}else{
 						vely = -vely * CoR;	
 						posy = posy + step*vely;
-					}
-
-
-					// acce = (1/inertia)*((force*radius) + gravity*mass*Math.cos(angle));
-					// velocity = velocity + step*acce;
-					// angle = angle + step*velocity;
-					
-					// if(angle > Math.PI)
-					// {
-					// 	angle = 0;
-					// 	velocity = -velocity*CoR;
-					// 	vely = -vely * CoR;
-					// }
-
-					// if(angle < 0 && posy <= -1)
-					// {
-					// 	angle = 0; 
-					// 	velocity = -velocity*CoR;
-					// }
-					
-					// //Translation i x-led
-					// if(Math.cos(forceangle)*forceInit >= frictionStill)
-					// {
-					// 	// Beräknar accelerationen i x-led
-					// 			// Om den är i luften
-					// 	if(posy > -1){
-					// 		accx = 1/mass*((Math.cos(forceangle)*force));
-					// 	}else{	// Om den är på marken
-					// 		accx = 1/mass*((Math.cos(forceangle)*force) - frictionmove*velx);
-					// 	}
-					// 	// Beräknar hastigheten i x-led
-					// 	velx = velx + step*accx;
-					// 	// Beräknar positionen i x-led
-					// 	posx = posx + step*velx;
-	
-					// }
-					
-					// //Translation i y-led
-					// if(posy > -1)
-					// {
-					// 	accy = 1/mass*((Math.sin(forceangle)*force)-gravity*mass);
-					// 	vely = vely + step*accy;
-					// 	posy = posy + step*vely;
-					// 	//console.log('position y-led: ' + posy);
-					// 	//window.alert('I if-sats' + posy);
-					// }else{
-					// 	vely = -vely * CoR;	
-					// 	posy = posy + step*vely;
-					// }
-					
+					}					
 				}
 				else //Translaterar endast
 				{
@@ -403,23 +343,7 @@
 			
 			function animate() 
 			{
-				////////////////////////////
-				//	OBS TEST RENDERA FPS ///
-				////////////////////////////
-				
-				var elapsed = window.animationTime - start;
-  				if (elapsed < duration) {
-    				window.requestAnimationFrame(animate);
-  				}
-  				var frameNumber = Math.round(elapsed/(1000/rate));
-  				if (frameNumber == lastFrameNumber)
-    			return;
-  				lastFrameNumber = frameNumber;
-  				// ... update the display based on frameNumber ...
-
-  				//////// SLUT PÅ TEST ////////
-
-  				requestAnimationFrame( animate ); // Request to be called again for next frame
+				requestAnimationFrame( animate ); // Request to be called again for next frame
 				render();
 
 			}
