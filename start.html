@@ -400,8 +400,8 @@
 
 				}
 
-				console.log('Angle = ' + angle);
-				rotmat.makeRotationZ(-10*step*angle);
+				console.log('Angle = ' + anglerotx);
+				rotmat.makeRotationZ(-10*step*anglerotx);
 				trans1mat.makeTranslation(-2,2,-2);
 				trans2mat.makeTranslation(2,-2,2);
 				
@@ -413,7 +413,7 @@
 					for(idx = 0; idx<8; idx++)
 					{
 						geom.vertices[idx].applyMatrix4(trans1mat);
-						geom.vertices[idx].applyMatrix4(rotmat);
+						geom.vertices[idx].applyMatrix4(rotmatx);
 						geom.vertices[idx].applyMatrix4(trans2mat);
 						
 					}
