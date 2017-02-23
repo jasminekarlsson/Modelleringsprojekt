@@ -46,12 +46,14 @@
 			//Translation z-led
 			var accz = 0, velz = 0, posz = 0;
 			var rotmatx, rotmaty, rotmatz, trans1mat, trans2mat;
+
 			//Start value Force
 			var force = new THREE.Vector3(100, 100, 100);
 			var forceInit = force;
 			//Define Hmin/Hmax
 			var Hmin;
 			var Hmax;
+
 			function onWindowResize() 
 			{
 				windowHalfX = window.innerWidth / 2;
@@ -157,6 +159,7 @@
 			
 			function render()
       {			
+
 				var gravity = 9.82;	
 				var step = 1/120;	
 				
@@ -166,6 +169,7 @@
 				
 				//Blockets konstanter  
 				var mass = 5;
+
 				var width = Math.abs(geom.vertices[3].x - geom.vertices[2].x);
  				var depth = Math.abs(geom.vertices[3].z - geom.vertices[0].z);
  				var height = Math.abs(geom.vertices[3].y - geom.vertices[7].y);
@@ -177,24 +181,28 @@
 				//Konstanter mellan block och golv
 				var frictionStill = 5;
 				var frictionMove = 3;
+
 				var CoR = 0.5; // ett tal mellan 0-1, studskoefficient
 				
 				// Set up the camera
 				camera.position.x = 0;
 				camera.position.y = -mouseY*10;
 				camera.lookAt( scene.position );
-        		//Startposition för planets och golvets mittpunkt				
+
+        	//Startposition för planets och golvets mittpunkt				
 				plan.position.x = 0;
 				plan.position.y = -3;
 				
 				golv.position.x = 0;
 				golv.position.y = -2.1;
 				
+
 				//Om radie < Hmin -> tippar bakåt, Om radie > Hmax -> tippar framåt
 				if(force.x != 0 || force.y != 0 || force.z != 0) //<-- HÄR SKA DET SKAPAS FÖR X, Y OCH Z -->
 				{
 					Hmin = (forceInit.z*height/2 - mass*gravity*width/2 - frictionStill*height/2)/forceInit.z;
 					Hmax = (forceInit.z*height/2 + mass*gravity*width/2 - frictionStill*height/2)/forceInit.z;
+
 					//console.log('Hmin = ' + Hmin + ', Hmax = ' + Hmax);
 				}
 				
@@ -318,9 +326,11 @@
 						accy = 1/mass*((Math.sin(forceangle)*force)-gravity*mass);
 						vely = vely + step*accy;
 						posy = posy + step*vely;
-					}else{
+					}
+          else{
 						vely = -vely * CoR;	
 						posy = posy + step*vely;
+
 					}	
 					
 					// Translation x-led
@@ -332,6 +342,7 @@
 				}
 				else //Translaterar endast
 				{
+
 					//Translation i x-led
 					if(forceInit.x >= frictionStill)
 					{
@@ -386,7 +397,32 @@
 						// Beräknar positionen i x-led
 						posz = posz + step*velx;
 					}
+
 				}
+
+				console.log('Angle = ' + angle);
+				rotmat.makeRotationZ(-10*step*angle);
+				trans1mat.makeTranslation(-2,2,-2);
+				trans2mat.makeTranslation(2,-2,2);
+				
+
+				//Roterar runt z-axeln
+				block.rotation.z = angle;
+				if(geom.vertices[1].x < 20)
+				{
+					for(idx = 0; idx<8; idx++)
+					{
+						geom.vertices[idx].applyMatrix4(trans1mat);
+						geom.vertices[idx].applyMatrix4(rotmat);
+						geom.vertices[idx].applyMatrix4(trans2mat);
+						
+					}
+				}
+				
+				//Uppdaterar vertice
+				geom.verticesNeedUpdate = true;
+				//Uppdaterar blocket
+				block3D.updateMatrix();
 				
 				//Uppdaterar vertice
 				geom.verticesNeedUpdate = true;
@@ -423,9 +459,11 @@
 				// Sätter positionen till att vara blockets x-position
 				block.position.y = posy;
 				// Sätter kraften till 0 eftersom det endast är en impuls
+
 				force.setX(0);
 				force.setY(0);
 				force.setZ(0);
+
         //objectTranslation.position.y = objectTranslation.position.y*Math.sin(angle);
 				// Render the scene
 				renderer.render( scene, camera );
