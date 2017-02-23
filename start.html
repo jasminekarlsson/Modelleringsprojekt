@@ -31,6 +31,7 @@
 			var v0,v1,v2,v3,v4,v5,v6,v7;
 			var object; //3D
 			var golv; //3D
+<<<<<<< HEAD
 			var block3D; 
 
 			
@@ -52,6 +53,27 @@
 			var Hmin;
 			var Hmax;
 			
+=======
+			
+			var acce = 0, velocity = 0, angle = Math.PI/2;
+			
+			//Translation x-led
+
+			var accx = 0, velx = 0, posx = 0;
+		
+			//Translation y-led
+			var accy = 0, vely = 0, posy = -1;
+
+			//Start value Force
+			var force = 100;
+			var forceInit = force;
+
+			//Define Hmin/Hmax
+			var Hmin;
+			var Hmax;
+			
+
+>>>>>>> master
 			function onWindowResize() 
 			{
 				windowHalfX = window.innerWidth / 2;
@@ -76,6 +98,7 @@
 				// MESH object 3D ----------------------------------------------------
 				var meshMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
 				meshMaterial.wireframe = true;
+<<<<<<< HEAD
 				geom = new THREE.Geometry(); 
 				v0 = new THREE.Vector4(-2,-2,-2, 1);
 				v1 = new THREE.Vector4( 2,-2,-2, 1);
@@ -85,6 +108,19 @@
 				v5 = new THREE.Vector4( 2, 2,-2, 1);
 				v6 = new THREE.Vector4( 2, 2, 2, 1);
 				v7 = new THREE.Vector4(-2, 2, 2, 1);
+=======
+
+				var geom = new THREE.Geometry(); 
+				var v0 = new THREE.Vector3(-2,-2,-2);
+				var v1 = new THREE.Vector3( 2,-2,-2);
+				var v2 = new THREE.Vector3( 2,-2, 2);
+				var v3 = new THREE.Vector3(-2,-2, 2);
+				var v4 = new THREE.Vector3(-2, 2,-2);
+				var v5 = new THREE.Vector3( 2, 2,-2);
+				var v6 = new THREE.Vector3( 2, 2, 2);
+				var v7 = new THREE.Vector3(-2, 2, 2);
+
+>>>>>>> master
 				geom.vertices.push(v0);
 				geom.vertices.push(v1);
 				geom.vertices.push(v2);
@@ -109,12 +145,16 @@
 				geom.computeVertexNormals();
 				object = new THREE.Mesh( geom,meshMaterial);
 				object.doubleSided = true;
+<<<<<<< HEAD
 				block3D = new THREE.Object3D();
 				block3D.add(object);
 				block3D.matrixAutoUpdate = true;
 				
 				
 				
+=======
+				
+>>>>>>> master
 				// MESH golv 3D ---------------------------------------------------
 				var geometryGolv = new THREE.BoxGeometry(16,0.1,10); 
 				var materialGolv = new THREE.MeshBasicMaterial({ color: 0xff0000 });
@@ -135,7 +175,10 @@
 				sceneRoot.add( object ); //New node for translation transformation
 				sceneRoot.add(golv); 
 				
+<<<<<<< HEAD
 				
+=======
+>>>>>>> master
 				renderer = new THREE.WebGLRenderer();
 				renderer.setClearColor( 0x000000 );
 				renderer.setPixelRatio( window.devicePixelRatio );
@@ -156,6 +199,10 @@
 				//Hur man ändrar position på ett vertice
 				//geom.vertices[2].x = 3;
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 				var gravity = 9.82;	
 				var step = 1/120;	
 				
@@ -163,16 +210,30 @@
 				//Kraftpåverkande konstanter
 				var radius = 0.2;
 				var forceangle = 0;
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 				
 				//Blockets konstanter  <-- ATT GÖRA: Räkna ut längden och bredden beroende på verices-->
 				var mass = 5;
 				var length = 1;
 				var width = 1;
 				var inertia = mass/3*(length*length+width*width) //tröghetsmoment
+<<<<<<< HEAD
 				
 				//Konstanter mellan block och golv
 				var frictionStill = 5;
 				var frictionmove = 3;
+=======
+
+				var length2 = Math.abs(geom.vertices[4].y - geom.vertices[0].y);
+				var width2 = Math.abs(geom.vertices[2].z - geom.vertices[1].z)
+				
+				//Konstanter mellan block och golv
+				var frictionstill = 0.5;
+				var frictionmove = 0.2
+>>>>>>> master
 				var CoR = 0.5; // ett tal mellan 0-1, studskoefficient
 				
 				// Set up the camera
@@ -180,8 +241,13 @@
 				camera.position.y = -mouseY*10;
 				camera.lookAt( scene.position );
 				
+<<<<<<< HEAD
         //Startposition för planets och golvets mittpunkt
 				
+=======
+
+        //Startposition för planets och golvets mittpunkt				
+>>>>>>> master
 				plan.position.x = 0;
 				plan.position.y = -3;
 				
@@ -192,6 +258,11 @@
 
 				//console.log(posy);
 				
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> master
 				//Startposition för punkt längst ner till höger
 				//posy = geom.vertices[2].y;
 				//posx = geom.geometry.vertices[2].position.x;
@@ -217,6 +288,7 @@
 				//Räknar ut acceleration, hastighet och vinkel
 				//acce = (1/inertia)*(force*radius) + gravity*mass*Math.cos(angle);
 				//velocity = velocity + step*acce;
+<<<<<<< HEAD
 				//angle = angle - Math.abs(step*velocity);w
 				//objectTranslation.position.x = geometryBox.x*Math.cos(angle);
 				//Om radie < Hmin -> tippar bakåt, Om radie > Hmax -> tippar framåt
@@ -224,6 +296,16 @@
 					Hmin = (forceInit*length/2 - mass*gravity*width/2 - frictionStill*length/2)/force;
 					Hmax = (forceInit*length/2 + mass*gravity*width/2 - frictionStill*length/2)/force;
 					//console.log('Hmin = ' + Hmin + ', Hmax = ' + Hmax);
+=======
+
+				//angle = angle - Math.abs(step*velocity);
+				//objectTranslation.position.x = geometryBox.x*Math.cos(angle);
+				//Om radie < Hmin -> tippar bakåt, Om radie > Hmax -> tippar framåt
+
+				if(force != 0){
+					Hmin = (force*length/2 - mass*gravity*width/2 - frictionstill*length/2)/force;
+					Hmax = (force*length/2 + mass*gravity*width/2 - frictionstill*length/2)/force;
+>>>>>>> master
 				}
 				if (radius > Hmax) //faller framåt
 				{
@@ -231,6 +313,10 @@
 					velocity = velocity + step*acce;
 					angle = angle - step*velocity;
 					
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 					if(angle < 0 && posy <= -1)
 					{
 						angle = 0; 
@@ -252,6 +338,10 @@
 						// Beräknar positionen i x-led
 						posx = posx + step*velx;
 	
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 					}
 					
 					//Translation i y-led
@@ -295,10 +385,18 @@
 						vely = -vely * CoR;	
 						posy = posy + step*vely;
 					}					
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 				}
 				else //Translaterar endast
 				{
 					//Insert code here
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 					if(Math.cos(angle)*force >= frictionStill)
 					{
 						acce = 1/mass*Math.cos(angle)*force - frictionMove*velocity;
@@ -341,6 +439,7 @@
 						posy = posy + step*vely;
 						//console.log('studspositionen för y: ' + posy);
 					}
+<<<<<<< HEAD
 
 				}
 
@@ -367,6 +466,9 @@
 				geom.verticesNeedUpdate = true;
 				//Uppdaterar blocket
 				block3D.updateMatrix();
+=======
+				}
+>>>>>>> master
 				
 				//Roterar runt z-axeln
 				block.rotation.z = angle;
@@ -377,9 +479,14 @@
 				// Sätter kraften till 0 eftersom det endast är en impuls
 				force = 0;
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
         //objectTranslation.position.y = objectTranslation.position.y*Math.sin(angle);
 				// Render the scene
 				renderer.render( scene, camera );
+				force = 0;
 			}
 			
 			function animate() 
@@ -388,8 +495,12 @@
 				render();
 
 			}
+<<<<<<< HEAD
 			
 			
+=======
+		
+>>>>>>> master
 			init();    // Set up the scene
 			animate(); // Enter an infinite loop
 			window.requestAnimationFrame(animate);
