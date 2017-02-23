@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>Three.js Planetary system</title>
+		<title>main</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 	</head>
@@ -11,11 +11,25 @@
 
 		<!-- <script src="three.min.js"></script> -->
 		<script src="three.js"></script>
+		<script src="OrbitControls.js"></script>
+		<script src="stats.min.js"></script>
+		<script src="Detector.js"></script>		
+		
 		<script>
+			
+			//IT IS WORKING!! ROTATE CAM AROUND MIDDLE
+			
+			
 			
 			// Lots of global variables. (This is JavaScript. No use complaining.)
 			var container;
+			var stats;
+			var controls; 
 			var camera, scene, renderer;
+			var geometry, materials, mesh, gparent, parent;
+			var radius = 500, theta = 0, phi = 0;
+			var pressed = {};
+			
 			
 			var clock = new THREE.Clock(true);
 			
@@ -53,28 +67,39 @@
 			//Define Hmin/Hmax
 			var Hmin;
 			var Hmax;
-
-			function onWindowResize() 
-			{
-				windowHalfX = window.innerWidth / 2;
-				windowHalfY = window.innerHeight / 2;
-				camera.aspect = window.innerWidth / window.innerHeight;
-				camera.updateProjectionMatrix();
-				renderer.setSize( window.innerWidth, window.innerHeight );
-			}
 			
+
+
+
+
 			function init() 
 			{
-				container = document.getElementById( 'container' );
-				camera = new THREE.PerspectiveCamera( 60, window.innerWidth/window.innerHeight, 0.1, 100 );
-				camera.position.z = 10;
-				scene = new THREE.Scene();
+			
+			 	camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 1000 );
+  				//camera.position.z = 10;
+
+  				controls = new THREE.OrbitControls( camera ); // -----------------
+  				controls.addEventListener( 'change', render ); //----------------
+
+  				scene = new THREE.Scene();
+  				
+				gparent = new THREE.Object3D();  //----------------
+				scene.add( gparent );  //----------------
+
+				parent = new THREE.Object3D();  //----------------
+				gparent.add( parent );  //----------------
+
+				parent.add( camera ); //----------------
+				camera.position.set(0, 0, 10); //----------------
+
+			
 								
 				// MESH block
 				var geometryBlock = new THREE.PlaneGeometry( 2, 2 );
 				var materialBlock = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: false });
 				//materialBlock.wireframe = true;
 				block = new THREE.Mesh( geometryBlock, materialBlock );
+				
 				// MESH object 3D ----------------------------------------------------
 				var meshMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
 				meshMaterial.wireframe = true;
@@ -115,8 +140,6 @@
 				block3D.add(object);
 				block3D.matrixAutoUpdate = true;
 				
-				
-				
 				// MESH golv 3D ---------------------------------------------------
 				var geometryGolv = new THREE.BoxGeometry(16,0.1,10); 
 				var materialGolv = new THREE.MeshBasicMaterial({ color: 0xff0000 });
@@ -136,14 +159,7 @@
 				sceneRoot.add( block );
 				sceneRoot.add( object ); //New node for translation transformation
 				sceneRoot.add(golv); 
-				
-				
-				renderer = new THREE.WebGLRenderer();
-				renderer.setClearColor( 0x000000 );
-				renderer.setPixelRatio( window.devicePixelRatio );
-				renderer.setSize( window.innerWidth, window.innerHeight );
-				container.appendChild( renderer.domElement );
-				window.addEventListener( 'resize', onWindowResize, false );
+			
 				
 				rotmatx = new THREE.Matrix4();
 				rotmatx.identity();
@@ -155,10 +171,59 @@
 				trans1mat.identity();
 				trans2mat = new THREE.Matrix4();
 				trans2mat.identity();
+				
+				
+				
+				
+				// renderer -------------------------
+				renderer = new THREE.WebGLRenderer( { antialias: false } );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+ 				container = document.getElementById( 'container' );
+  				container.appendChild( renderer.domElement );
+
+  				window.addEventListener( 'resize', onWindowResize, false );
+				
+				
+				//renderer.setClearColor( 0x000000 );
+				//renderer.setPixelRatio( window.devicePixelRatio );
 			}
 			
+			
+			
+			function onWindowResize() 
+			{
+				//windowHalfX = window.innerWidth / 2;
+				//windowHalfY = window.innerHeight / 2;
+
+			    camera.aspect = window.innerWidth / window.innerHeight;
+  				camera.updateProjectionMatrix();
+
+  				renderer.setSize( window.innerWidth, window.innerHeight );
+  				render();
+			}
+			
+			//------ PRESS KEYS --------------
+			function handleDown(e) { pressed[e.keyCode] = true; }
+			function handleUp(e) { pressed[e.keyCode] = false; }
+			
+			function handleKeys() {
+   			// Left
+		    if(pressed[37]) phi += 0.01;
+ 		    // Right
+  		    if(pressed[39]) phi -= 0.01;
+   			// Up
+    		if(pressed[38]) theta += 0.01;
+    		// Down
+    		if(pressed[40]) theta -= 0.01;
+			}
+			
+			document.onkeydown = handleDown;
+			document.onkeyup = handleUp;
+			
+			
 			function render()
-      {			
+      		{			
 
 				var gravity = 9.82;	
 				var step = 1/120;	
@@ -187,7 +252,7 @@
 				// Set up the camera
 				camera.position.x = 0;
 				camera.position.y = -mouseY*10;
-				camera.lookAt( scene.position );
+				//camera.lookAt( scene.position );
 
         	//Startposition för planets och golvets mittpunkt				
 				plan.position.x = 0;
@@ -464,21 +529,24 @@
 				force.setY(0);
 				force.setZ(0);
 
-        //objectTranslation.position.y = objectTranslation.position.y*Math.sin(angle);
+        		//objectTranslation.position.y = objectTranslation.position.y*Math.sin(angle);
 				// Render the scene
-				renderer.render( scene, camera );
+				
+				handleKeys();//---------------------
+   				gparent.rotation.y = phi; //---------------------
+   				parent.rotation.x = theta; //---------------------
+				renderer.render( scene, camera ); //---------------------
 			}
 			
 			function animate() 
 			{
 				requestAnimationFrame( animate ); // Request to be called again for next frame
-				render();
+				controls.update(); //---------------------
 			}
 			
 			
 			init();    // Set up the scene
 			animate(); // Enter an infinite loop
-			window.requestAnimationFrame(animate);
 			
 		</script>
 	
