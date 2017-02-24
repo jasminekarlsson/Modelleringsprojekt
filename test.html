@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>test</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	</head>
+	<body>
+
+		<div id="container"></div>
+
+		<!-- <script src="three.min.js"></script> -->
+		<script src="three.js"></script>
+		<script src="OrbitControls.js"></script>
+		<script src="stats.min.js"></script>
+		<script src="Detector.js"></script>
+
+
+		<script>
+		
+			var container, stats;
+
+var camera, controls, scene, renderer;
+
+//var cross;
+
+init();
+animate();
+
+function init()
+ {
+
+// LILLA ORGINAL CAMERA TRANSLATION
+
+
+  camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 1000 );
+  camera.position.z = 10;
+
+  controls = new THREE.OrbitControls( camera ); // -----------------
+  controls.addEventListener( 'change', render ); //----------------
+
+  scene = new THREE.Scene();
+
+  // world
+
+var geometryBlock = new THREE.BoxGeometry( 2, 2, 2 );
+var materialBlock = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: false });
+materialBlock.wireframe = true;
+block = new THREE.Mesh( geometryBlock, materialBlock );
+scene.add( block );
+
+
+
+  // renderer
+
+  renderer = new THREE.WebGLRenderer( { antialias: false } );
+  renderer.setSize( window.innerWidth, window.innerHeight );
+
+  container = document.getElementById( 'container' );
+  container.appendChild( renderer.domElement );
+
+  window.addEventListener( 'resize', onWindowResize, false );
+
+}
+
+function onWindowResize() 
+{
+
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+
+  renderer.setSize( window.innerWidth, window.innerHeight );
+
+  render();
+
+}
+
+function animate() 
+{
+
+  requestAnimationFrame( animate );
+  controls.update(); //---------------------
+
+}
+
+function render() 
+{
+  renderer.render( scene, camera );
+}
+			
+		</script>
+	</body>
+</html>
+
+
