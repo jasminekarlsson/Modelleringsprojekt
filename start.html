@@ -8,14 +8,23 @@
   <body>
 
     <div id="container"></div>
-
-    <!-- <script src="three.min.js"></script> -->
     <script src="three.js"></script>
+    <script src="OrbitControls.js"></script>
+    <script src="stats.min.js"></script>
+    <script src="Detector.js"></script>   
+    <!-- <script src="three.min.js"></script> -->
     <script>
       
       // Lots of global variables. (This is JavaScript. No use complaining.)
       var container;
       var camera, scene, renderer;
+      var stats;
+      var controls; 
+      var geometry, materials, mesh, gparent, parent;
+      var radius = 500, theta = 0, phi = 0;
+      var pressed = {};
+      
+      var collidableMeshList = [];
       
       var clock = new THREE.Clock(true);
       
@@ -127,12 +136,69 @@
           object.updateMatrix();
       }
       
+        //------ PRESS KEYS --------------
+      function handleDown(e) { pressed[e.keyCode] = true; }
+      function handleUp(e) { pressed[e.keyCode] = false; }
+      
+      function handleKeys() {
+        // Left
+        if(pressed[37]) phi += 0.01;
+        // Right
+          if(pressed[39]) phi -= 0.01;
+        // Up
+        if(pressed[38]) theta += 0.01;
+        // Down
+        if(pressed[40]) theta -= 0.01;
+      }
+      
+      document.onkeydown = handleDown;
+      document.onkeyup = handleUp;
+      
+      function collision()
+      {
+        var originPoint = object.position.clone(); // klonar object*s position
+        
+        for (var vertexIndex = 0; vertexIndex < object.geometry.vertices.length; vertexIndex++) //går igenom alla vertex
+        { 
+
+          var localVertex = object.geometry.vertices[vertexIndex].clone(); //lägger objectets vertex koord i localVertex??
+          var globalVertex = localVertex.applyMatrix4( object.matrix ); //wtf applyMatrix4
+          var directionVector = globalVertex.sub( object.position ); // wtf sub
+        
+          var ray = new THREE.Raycaster( originPoint, directionVector.clone().normalize() );
+          var collisionResults = ray.intersectObjects( collidableMeshList );
+          if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() ) 
+            console.log(' Hit ');
+            
+            
+            // GÅR INTE IN I IF?!?!??
+        }
+  
+      //stats.collision();
+      }
+      
+      
       function init() 
       {
-        container = document.getElementById( 'container' );
+        //container = document.getElementById( 'container' );
         camera = new THREE.PerspectiveCamera( 60, window.innerWidth/window.innerHeight, 0.1, 100 );
-        camera.position.z = 10;
+        //camera.position.z = 10;
+        //scene = new THREE.Scene();
+        
+        
+        controls = new THREE.OrbitControls( camera ); // -----------------
+        controls.addEventListener( 'change', render ); //----------------
+
         scene = new THREE.Scene();
+          
+        gparent = new THREE.Object3D();  //----------------
+        scene.add( gparent );  //----------------
+
+        parent = new THREE.Object3D();  //----------------
+        gparent.add( parent );  //----------------
+
+        parent.add( camera ); //----------------
+        camera.position.set(0, 0, 10); //----------------
                 
         // MESH block
         var geometryBlock = new THREE.PlaneGeometry( 2, 2 );
@@ -190,13 +256,29 @@
         // Sun branch
         sceneRoot.add( object ); //New node for translation transformation
         sceneRoot.add(golv); 
+        collidableMeshList.push(golv);
         
+       /*
         renderer = new THREE.WebGLRenderer();
         renderer.setClearColor( 0x000000 );
         renderer.setPixelRatio( window.devicePixelRatio );
         renderer.setSize( window.innerWidth, window.innerHeight );
         container.appendChild( renderer.domElement );
         window.addEventListener( 'resize', onWindowResize, false );
+        */
+        
+        // renderer -------------------------
+        renderer = new THREE.WebGLRenderer( { antialias: false } );
+        renderer.setSize( window.innerWidth, window.innerHeight );
+
+        container = document.getElementById( 'container' );
+          container.appendChild( renderer.domElement );
+
+          window.addEventListener( 'resize', onWindowResize, false );
+        
+        
+        //renderer.setClearColor( 0x000000 );
+        //renderer.setPixelRatio( window.devicePixelRatio );
         
         rotmatx = new THREE.Matrix4();
         rotmatx.identity();
@@ -216,6 +298,10 @@
         posx = startTranslation.x;
         posy = startTranslation.y;
         posz = startTranslation.z;
+        
+        
+        
+        
       }    
 
 
@@ -334,7 +420,7 @@
         // Set up the camera
         camera.position.x = 0;
         camera.position.y = -mouseY*10;
-        camera.lookAt( scene.position );
+        //camera.lookAt( scene.position );
           //Startposition för golvets mittpunkt       
         golv.position.x = 0;
         golv.position.y = -2;
@@ -625,24 +711,31 @@
         force.setZ(0);
         //objectTranslation.position.y = objectTranslation.position.y*Math.sin(angle);
         // Render the scene
-        renderer.render( scene, camera );
+        
+          handleKeys();//---------------------
+          gparent.rotation.y = phi; //---------------------
+          parent.rotation.x = theta; //---------------------
+        renderer.render( scene, camera ); //---------------------
+        collision(); 
       }
+      
+      
+        
+   
       
       function animate() 
       {
         requestAnimationFrame( animate ); // Request to be called again for next frame
-        render();
+        controls.update(); //---------------------
+        collision(); 
       }
 
+      
       
       init();    // Set up the scene
       animate(); // Enter an infinite loop
       window.requestAnimationFrame(animate);
       
-    </script>
-  
-  
-  
-  
+    </script>  
   </body>
 </html>
