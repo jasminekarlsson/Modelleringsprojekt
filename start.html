@@ -12,172 +12,10 @@
     <script src="OrbitControls.js"></script>
     <script src="stats.min.js"></script>
     <script src="Detector.js"></script>   
+    <script src="funktioner.js"></script>
     <!-- <script src="three.min.js"></script> -->
+    
     <script>
-      
-      // Lots of global variables. (This is JavaScript. No use complaining.)
-      var container;
-      var camera, scene, renderer;
-      var stats;
-      var controls; 
-      var geometry, materials, mesh, gparent, parent;
-      var radiusCamera = 500, theta = 0, phi = 0;
-      var pressed = {};
-      
-      var collidableMeshList = [];
-      
-      var clock = new THREE.Clock(true);
-      
-      var mouseX = 0, mouseY = 0;
-      var windowHalfX = window.innerWidth / 2;
-      var windowHalfY = window.innerHeight / 2;     
-      
-      // Object3D ("Group") nodes and Mesh nodes
-      var sceneRoot = new THREE.Group();
-      var block;
-      var plan;
-      var geom;
-      var v0,v1,v2,v3,v4,v5,v6,v7;
-      var object; //3D
-      var golv; //3D
-      var block3D; 
-      
-      //Rotation startvärden
-      var accrotx = 0, velrotx = 0, anglerotx = 0;
-      var accroty = 0, velroty = 0, angleroty = 0;
-      var accrotz = 0, velrotz = 0, anglerotz = 0;
-      
-      //Translation startvärden
-      var accx = 0, velx = 0, posx = 0;
-      var accy = 0, vely = 0, posy = 0;
-      var accz = 0, velz = 0, posz = 0;
-
-      var rotmatx, rotmaty, rotmatz, trans1mat, trans2mat;
-      //Start value Force
-      var force = new THREE.Vector3(0, 0, -1000);
-      var forceInit = force.clone();
-      
-      //Define Hmin/Hmax
-      var Hminx = 0;
-      var Hmaxx = 0;
-      var Hminy = 0;
-      var Hmaxy = 0;
-      var Hminz = 0;
-      var Hmaxz = 0;
-      //
-      var step = 1/120; 
-
-
-
-      function onWindowResize() 
-      {
-        windowHalfX = window.innerWidth / 2;
-        windowHalfY = window.innerHeight / 2;
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize( window.innerWidth, window.innerHeight );
-      }
-
-      function translateCube(cube , translationVector ,object){
-        //console.log(translationVector);
-        trans1mat.makeTranslation(translationVector.x*step,translationVector.y*step,translationVector.z*step);
-        
-        for( index = 0; index < 8; index++){
-
-            cube.vertices[index].applyMatrix4(trans1mat);
-         
-            // cube.vertices[index].setX(translationVector.x - geom.vertices[index].x);
-            // cube.vertices[index].setY(translationVector.y - geom.vertices[index].y);
-            // cube.vertices[index].setZ(translationVector.z - geom.vertices[index].z);
-
-          }
-
-        cube.verticesNeedUpdate = true;
-        object.updateMatrix();
-      }
-
-    function boxOnGround(cube){
-        
-        var counter = 0;
-        for( index = 0; index < 8; index++){
-
-            if(cube.vertices[index].y < -1.50001){
-              counter++;
-              if (counter == 4){
-                //console.log('Jag har 3 vertex på marken');
-                return true;
-              }
-
-            }
-
-          }
-        return false;
-      }
-
-
-      function rotationCube(cube, rotationVector, translationVector, object){
-
-        trans1mat.makeTranslation(translationVector.x,translationVector.y,translationVector.z);
-        trans2mat.makeTranslation(-translationVector.x,-translationVector.y,-translationVector.z);
-        
-        rotmatx.makeRotationX(rotationVector.x*step);
-        rotmaty.makeRotationY(rotationVector.y*step);
-        rotmatz.makeRotationZ(rotationVector.z*step);
-
-          for(idx = 0; idx<8; idx++)
-          {
-            geom.vertices[idx].applyMatrix4(trans2mat);
-            geom.vertices[idx].applyMatrix4(rotmatx);
-            geom.vertices[idx].applyMatrix4(rotmaty);
-            geom.vertices[idx].applyMatrix4(rotmatz);
-            geom.vertices[idx].applyMatrix4(trans1mat);
-            
-          }
-          cube.verticesNeedUpdate = true;
-          object.updateMatrix();
-      }
-      
-        //------ PRESS KEYS --------------
-      function handleDown(e) { pressed[e.keyCode] = true; }
-      function handleUp(e) { pressed[e.keyCode] = false; }
-      
-      function handleKeys() {
-        // Left
-        if(pressed[37]) phi += 0.01;
-        // Right
-        if(pressed[39]) phi -= 0.01;
-        // Up
-        if(pressed[38]) theta += 0.01;
-        // Down
-        if(pressed[40]) theta -= 0.01;
-      }
-      
-      document.onkeydown = handleDown;
-      document.onkeyup = handleUp;
-      
-      function collision()
-      {
-        var originPoint = object.position.clone(); // klonar object*s position
-        
-        for (var vertexIndex = 0; vertexIndex < object.geometry.vertices.length; vertexIndex++) //går igenom alla vertex
-        { 
-
-          var localVertex = object.geometry.vertices[vertexIndex].clone(); //lägger objectets vertex koord i localVertex??
-          var globalVertex = localVertex.applyMatrix4( object.matrix ); //wtf applyMatrix4
-          var directionVector = globalVertex.sub( object.position ); // wtf sub
-        
-          var ray = new THREE.Raycaster( originPoint, directionVector.clone().normalize() );
-          var collisionResults = ray.intersectObjects( collidableMeshList );
-          if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() ) 
-            console.log(' Hit ');
-            
-            
-            // GÅR INTE IN I IF?!?!??
-        }
-  
-      //stats.collision();
-      }
-      
       
       function init() 
       {
@@ -189,15 +27,12 @@
         
         controls = new THREE.OrbitControls( camera ); // -----------------
         controls.addEventListener( 'change', render ); //----------------
-
         scene = new THREE.Scene();
           
         gparent = new THREE.Object3D();  //----------------
         scene.add( gparent );  //----------------
-
         parent = new THREE.Object3D();  //----------------
         gparent.add( parent );  //----------------
-
         parent.add( camera ); //----------------
         camera.position.set(0, 0, 10); //----------------
                 
@@ -271,10 +106,8 @@
         // renderer -------------------------
         renderer = new THREE.WebGLRenderer( { antialias: false } );
         renderer.setSize( window.innerWidth, window.innerHeight );
-
         container = document.getElementById( 'container' );
           container.appendChild( renderer.domElement );
-
           window.addEventListener( 'resize', onWindowResize, false );
         
         
@@ -291,10 +124,8 @@
         trans1mat.identity();
         trans2mat = new THREE.Matrix4();
         trans2mat.identity();
-
         var startTranslation = new THREE.Vector3(0,0/step,0);
         translateCube(geom, startTranslation, block3D);
-
         // var startRotation = new THREE.Vector3((Math.PI/4)/step ,0 ,0);
         // rotTransVector= new THREE.Vector3((geom.vertices[0].x + geom.vertices[6].x)/2, (geom.vertices[0].y + geom.vertices[6].y)/2, (geom.vertices[0].z + geom.vertices[6].z)/2);
         // rotationCube(geom, startRotation,rotTransVector,block3D);
@@ -307,106 +138,7 @@
         
         
       }    
-
-
-      function rotationVertex(cube){
-
-        var vertexArray = [];
-        for( index = 0; index < 8; index++){
-
-          if( cube.vertices[index].y <= -2){
-
-            vertexArray.push(index);
-            
-          }
-        }
-        var rotVertex = vertexArray[0];
-        for( arrayIndex = 0 ; arrayIndex < vertexArray.length; arrayIndex++){
-
-          if(forceInit.x < 0 && forceInit.z < 0){
-            console.log('Går in i if båda krafterna mindre än 0');
-              if(Math.abs(forceInit.x) > Math.abs(forceInit.z)){
-                if(cube.vertices[vertexArray[arrayIndex]].x < cube.vertices[rotVertex].x){
-                  rotVertex = vertexArray[arrayIndex];
-                }
-              }
-              else{
-                if(cube.vertices[vertexArray[arrayIndex]].z < cube.vertices[rotVertex].z){
-                  rotVertex = vertexArray[arrayIndex];
-                }
-
-              }
-          }else if (forceInit.x >= 0 && forceInit.z >= 0){
-            console.log('Går in i if båda krafterna större än 0 ');            
-              if(Math.abs(forceInit.x) > Math.abs(forceInit.z)){
-                if(cube.vertices[vertexArray[arrayIndex]].x > cube.vertices[rotVertex].x){
-                  rotVertex = vertexArray[arrayIndex];
-                }
-              }
-              else{
-                if(cube.vertices[vertexArray[arrayIndex]].z > cube.vertices[rotVertex].z){
-                  rotVertex = vertexArray[arrayIndex];
-                }
-
-              }
-
-          }else if (forceInit.x >= 0 && forceInit.z < 0){
-            console.log('Går in i if z krafterna mindre än 0, x>0');
-            if(Math.abs(forceInit.x) > Math.abs(forceInit.z)){
-                if(cube.vertices[vertexArray[arrayIndex]].x > cube.vertices[rotVertex].x){
-                  rotVertex = vertexArray[arrayIndex];
-                }
-              }
-              else{
-                if(cube.vertices[vertexArray[arrayIndex]].z < cube.vertices[rotVertex].z){
-                  rotVertex = vertexArray[arrayIndex];
-                }
-
-              }
-
-          }else if (forceInit.x < 0 && forceInit.z >= 0){
-            console.log('Går in i if x krafterna mindre än 0, z>0');
-            if(Math.abs(forceInit.x) > Math.abs(forceInit.z)){
-                if(cube.vertices[vertexArray[arrayIndex]].x < cube.vertices[rotVertex].x){
-                  rotVertex = vertexArray[arrayIndex];
-                }
-              }
-              else{
-                if(cube.vertices[vertexArray[arrayIndex]].z > cube.vertices[rotVertex].z){
-                  rotVertex = vertexArray[arrayIndex];
-                }
-
-              }
-
-          }
-
-        }
-        return rotVertex;
-
-      }
-
-      function ontheGround(cube){
-
-        for( index = 0; index < 8; index++){
-
-          if( cube.vertices[index].y <= -2){
-
-            return index;
-          }
-        }
-        return -1;
-      }
-
-      function rotForward(anglerot){
-          
-          if(anglerot < Math.PI/4){
-            
-            return false;
-          }
-          
-          return true;
-      }
-
+      
       function render()
       {     
         var gravity = 9.82; 
@@ -438,13 +170,11 @@
           //Startposition för golvets mittpunkt       
         golv.position.x = 0;
         golv.position.y = -2;
-
         //Checking if any vertex touched the ground
         var onGround = ontheGround(geom);
         //console.log(onGround);
         //Checking if an entire side of the box is on the ground
         var sideOnGround = boxOnGround(geom);
-
         var rotVertexID = rotationVertex(geom);
         //console.log('Rotation runt vertex nr ' + rotVertexID);
         
@@ -512,7 +242,6 @@
             }
           }
         }
-
           //Rotation kring y-axeln, framåt
           if(onGround != -1){
             accroty = (1/inertiay)*(force.y*radius) - frictionMove*velroty;
@@ -526,7 +255,6 @@
             velroty = velroty + step*accroty;
             angleroty = angleroty - step*velroty;
           }
-
           //Rotation kring z-axeln, framåt
           if (radius > Hmaxx){
             //console.log('jag roterar runt z');
@@ -557,7 +285,6 @@
             
             }
           }
-
           velrotz = velrotz + step*accrotz;
           anglerotz = anglerotz + step*velrotz;
           console.log('velorotz = ' + velrotz);
@@ -565,7 +292,6 @@
               anglerotz = anglerotz - (Math.PI/2);
           }
         }
-
           //När blocket når marken i x-led --> studs 
           // <-- KOLLA PÅ ALLA VERTEX HÄR -->
        
@@ -574,8 +300,6 @@
           // <-- KOLLA PÅ ALLA VERTEX HÄR -->
           //
           
-
-
             // velrotz = -velrotz*CoR;
             // console.log('velrotz = ' + velrotz);
             // if(velrotz < 0.1)
@@ -608,7 +332,6 @@
           // <-- BORDE KUNNA KNUFFAS UPPÅT ÄVEN OM DEN STÅR PÅ MARKEN -->
           if(onGround == -1)
           {
-
             //console.log('jag är i luften');
             accy = 1/mass*(force.y-gravity*mass);
             vely = vely + step*accy;
@@ -650,7 +373,6 @@
         }
         else if(radius < Hminx || radius < Hminy || radius < Hminz) //Roterar bakåt
         {
-
           console.log('Faller bakåt');
           m = 1;
           M = 1;
@@ -755,7 +477,6 @@
             posz = posz + step*velx;
           }
         }
-
                 
         //console.log('rotx = ' + velrotx + ' roty = ' + velroty + ' rotz = ' + velrotz );
         //console.log('posx = ' + posx + ' posy = ' + posy + ' posz = ' + posz );
@@ -764,11 +485,9 @@
         //Rotation rund samtliga axlar negativt för att det ska bli rätt med enhetscirkeln
         rotationVector = new THREE.Vector3(-velrotx,-velroty,-velrotz);
         if (onGround != -1) {
-
           rotTransVector= new THREE.Vector3(geom.vertices[rotVertexID].x, geom.vertices[rotVertexID].y, geom.vertices[rotVertexID].z);
         
           //console.log( ' onGround position ' + geom.vertices[onGround].x +' '+ geom.vertices[onGround].y + ' ' +geom.vertices[onGround].z);
-
         }else{
           rotTransVector= new THREE.Vector3((geom.vertices[0].x + geom.vertices[6].x)/2, (geom.vertices[0].y + geom.vertices[6].y)/2, (geom.vertices[0].z + geom.vertices[6].z)/2);
         }
@@ -803,7 +522,6 @@
         controls.update(); //---------------------
         collision(); 
       }
-
       
       
       init();    // Set up the scene
