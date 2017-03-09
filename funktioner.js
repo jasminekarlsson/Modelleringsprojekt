@@ -26,9 +26,9 @@
       var block3D; 
       
       //Rotation startvärden
-      var accrotx = 0, velrotx = 0, anglerotx = 0;
-      var accroty = 0, velroty = 0, angleroty = 0;
-      var accrotz = 0, velrotz = 0, anglerotz = 0;
+      var accrotx = 0, velrotx = 0, anglerotx = Math.PI/2;
+      var accroty = 0, velroty = 0, angleroty = Math.PI/2;
+      var accrotz = 0, velrotz = 0, anglerotz = Math.PI/2;
       
       //Translation startvärden
       var accx = 0, velx = 0, posx = 0;
@@ -36,7 +36,7 @@
       var accz = 0, velz = 0, posz = 0;
       var rotmatx, rotmaty, rotmatz, trans1mat, trans2mat;
       //Start value Force
-      var force = new THREE.Vector3(0, 0, -1000);
+      var force = new THREE.Vector3(1000, 0, 0);
       var forceInit = force.clone();
       
       //Define Hmin/Hmax
@@ -48,6 +48,14 @@
       var Hmaxz = 0;
       //
       var step = 1/120; 
+      
+      var gravity = 9.82;
+      haveRotatedForward = false; 
+      haveRotatedBackward = false;
+      normalRotation = false;
+      
+      //Objekt som kolliderar i en lista
+      var collidableMeshLis = [];
       function onWindowResize() 
       {
         windowHalfX = window.innerWidth / 2;
@@ -57,15 +65,10 @@
         renderer.setSize( window.innerWidth, window.innerHeight );
       }
       function translateCube(cube , translationVector ,object){
-        //console.log(translationVector);
+          
         trans1mat.makeTranslation(translationVector.x*step,translationVector.y*step,translationVector.z*step);
-        
         for( index = 0; index < 8; index++){
             cube.vertices[index].applyMatrix4(trans1mat);
-         
-            // cube.vertices[index].setX(translationVector.x - geom.vertices[index].x);
-            // cube.vertices[index].setY(translationVector.y - geom.vertices[index].y);
-            // cube.vertices[index].setZ(translationVector.z - geom.vertices[index].z);
           }
         cube.verticesNeedUpdate = true;
         object.updateMatrix();
@@ -77,7 +80,6 @@
             if(cube.vertices[index].y < -1.50001){
               counter++;
               if (counter == 4){
-                //console.log('Jag har 3 vertex på marken');
                 return true;
               }
             }
@@ -91,6 +93,7 @@
         rotmatx.makeRotationX(rotationVector.x*step);
         rotmaty.makeRotationY(rotationVector.y*step);
         rotmatz.makeRotationZ(rotationVector.z*step);
+        
           for(idx = 0; idx<8; idx++)
           {
             geom.vertices[idx].applyMatrix4(trans2mat);
@@ -99,9 +102,10 @@
             geom.vertices[idx].applyMatrix4(rotmatz);
             geom.vertices[idx].applyMatrix4(trans1mat);
             
+            
           }
           cube.verticesNeedUpdate = true;
-          object.updateMatrix();
+          object.updateMatrixWorld();
       }
       
         //------ PRESS KEYS --------------
@@ -121,28 +125,6 @@
       
       document.onkeydown = handleDown;
       document.onkeyup = handleUp;
-      
-      function collision()
-      {
-        var originPoint = object.position.clone(); // klonar object*s position
-        
-        for (var vertexIndex = 0; vertexIndex < object.geometry.vertices.length; vertexIndex++) //går igenom alla vertex
-        { 
-          var localVertex = object.geometry.vertices[vertexIndex].clone(); //lägger objectets vertex koord i localVertex??
-          var globalVertex = localVertex.applyMatrix4( object.matrix ); //wtf applyMatrix4
-          var directionVector = globalVertex.sub( object.position ); // wtf sub
-        
-          var ray = new THREE.Raycaster( originPoint, directionVector.clone().normalize() );
-          var collisionResults = ray.intersectObjects( collidableMeshList );
-          if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() ) 
-            console.log(' Hit ');
-            
-            
-            // GÅR INTE IN I IF?!?!??
-        }
-  
-      //stats.collision();
-      }
       
       function rotationVertex(cube){
         var vertexArray = [];
@@ -167,7 +149,7 @@
                 }
               }
           }else if (forceInit.x >= 0 && forceInit.z >= 0){
-            console.log('Går in i if båda krafterna större än 0 ');            
+            //console.log('Går in i if båda krafterna större än 0 ');            
               if(Math.abs(forceInit.x) > Math.abs(forceInit.z)){
                 if(cube.vertices[vertexArray[arrayIndex]].x > cube.vertices[rotVertex].x){
                   rotVertex = vertexArray[arrayIndex];
@@ -179,7 +161,7 @@
                 }
               }
           }else if (forceInit.x >= 0 && forceInit.z < 0){
-            console.log('Går in i if z krafterna mindre än 0, x>0');
+            //console.log('Går in i if z krafterna mindre än 0, x>0');
             if(Math.abs(forceInit.x) > Math.abs(forceInit.z)){
                 if(cube.vertices[vertexArray[arrayIndex]].x > cube.vertices[rotVertex].x){
                   rotVertex = vertexArray[arrayIndex];
@@ -223,3 +205,150 @@
           
           return true;
       }
+      
+      function keepRotating(anglerot){
+          
+          if(Math.abs(anglerot) < Math.PI/4){
+            //console.log(anglerot);
+            return false;
+          }
+          
+          return true;
+      }
+      
+      function ForwardRotation(accrot, velrot, anglerot, radius, Hmax, inertia, force, sideOnGround, onGround, haveRotatedForward, CoR, gravity, mass){
+  
+        if (radius > Hmax){
+            //Räknar ut acceleration, hastighet och vinkel
+            accrot = (1/inertia)*(force*radius) - step*mass*gravity*Math.cos(anglerot);
+            //Om vinkeln är större än PI/2 sätts den tillbaka till 0
+            if(anglerot >= Math.PI){
+              anglerot = anglerot - (Math.PI/2);
+            }
+            //Om objektet kolliderar med marken
+            console.log(haveRotatedForward);
+          if (collision(object) > 3 && haveRotatedForward){
+            accrot = 0;
+            velrot = -velrot*CoR;
+            console.log('Går in här' + accrot);
+        //     if(keepRotating(anglerot)){
+               
+        //         accrot = (1/inertia)*(force*radius) + step*gravity*mass*Math.cos(anglerot);
+        //     } 
+        //     else{
+        //         accrot = (1/inertia)*(force*radius) - step*gravity*mass*Math.cos(anglerot);
+        //     }            
+        //     //velrot = -velrot*CoR;//*Math.cos(anglerot);
+        //     if(anglerot > 0.01 && haveRotatedForward)
+        //     {
+        //         accrot = - step*mass*gravity*Math.cos(anglerot);
+        //     }
+            
+        //   }else if(onGround != -1 && haveRotatedForward){
+        //     if(keepRotating(anglerot)){
+               
+        //         accrot = (1/inertia)*(force*radius) + step*gravity*mass*Math.cos(anglerot);
+        //     }else if(Math.abs(mass * (velrot)) < Math.abs(step*gravity*mass*Math.cos(anglerot))) {
+        //         console.log('går in här');
+        //         accrot = (1/inertia)*(force*radius) - step*gravity*mass*Math.cos(anglerot);
+            // }
+          }
+          else if(collision(object) > 1 && haveRotatedForward)
+          {
+            if(!keepRotating(anglerot)){
+                accrot = (1/inertia)*(force*radius) - step*gravity*mass*Math.cos(anglerot);
+            } 
+            else{
+                accrot = (1/inertia)*(force*radius) + step*gravity*mass*Math.cos(anglerot);
+            }    
+              
+          }
+          
+          
+        
+          
+          velrot = velrot + step*accrot;
+          anglerot = anglerot + step*velrot;
+        } 
+        
+        
+        var returnValues = [accrot, velrot, anglerot];
+    
+        return returnValues;
+      }
+      
+      function backwardRotation(accrot, anglerot, velrot, height, mass, radius, sideOnGround, onGround, CoR, Hmin, frictionMove, force ){
+
+        m = 1;
+        M = 1;
+        console.log('Roterar bakåt');
+        if(radius < Hmin){
+            //console.log("jag roterar bakåt runt x-axeln");
+            accrot = ((M+m)*(gravity*Math.sin(anglerot)-frictionMove*velrot)- (height*m*velrot*Math.sin(anglerot)+force)*Math.cos(anglerot))/(height*(M+(1-Math.cos(anglerot)*Math.cos(anglerot))*m));
+            velrot = velrot + step*accrot*mass;
+            anglerot = anglerot + step*velrot;
+            
+            if(anglerot < Math.PI/2){
+              //anglerot = anglerot + (Math.PI/2);
+              normalRotation = true;
+            }
+          
+          if(collision(cuve)&& haveRotatedForward ){
+            
+            accrot = 0;  
+            velrot = -velrot*CoR;
+              if(Math.abs(velrot) < 0.001){
+                velrot = 0;
+              }
+          }else if(onGround != -1 && haveRotatedBackward){
+            if(keepRotating(anglerot)){
+                
+                  accrot = ((M+m)*(gravity*Math.sin(anglerot)-frictionMove*velrot)- (height*m*velrot*Math.sin(anglerot)+force)*Math.cos(anglerot))/(height*(M+(1-Math.cos(anglerot)*Math.cos(anglerot))*m)) + gravity*mass*Math.cos(anglerot);     
+            }else if(Math.abs(mass * (velrot/step)) < Math.abs(gravity*mass*Math.cos(anglerot))){
+              
+                accrot = ((M+m)*(gravity*Math.sin(anglerot)-frictionMove*velrot)- (height*m*velrot*Math.sin(anglerot)+force)*Math.cos(anglerot))/(height*(M+(1-Math.cos(anglerot)*Math.cos(anglerot))*m)) - gravity*mass*Math.cos(anglerot);
+            }
+            velrot = velrot + step*accrot*mass;
+            anglerot = anglerot + step*velrot;
+          }
+        }
+          var returnValues = [accrot, velrot, anglerot];
+
+      
+        return returnValues;
+      }
+      // }
+
+      function translationBackwardRotation(anglerot, velrot, vel, height, mass, frictionMove, force){
+
+        acc = ((-m*gravity*Math.sin(anglerot)*Math.cos(anglerot) + m*height*velrot*velrot*Math.sin(anglerot)+force))/(M+(1-Math.cos(anglerot)*Math.cos(anglerot))*m) - frictionMove*vel;
+        vel = velx + step*accx;
+        pos = posx + step*velx;
+
+        return vel;
+
+      }
+      
+     
+     
+function collision(cube)
+{
+     //console.log(object.position);
+     var intersects = 0;
+    for (var vertexIndex = 0; vertexIndex < cube.geometry.vertices.length; vertexIndex++)
+    {       
+        var localVertex = cube.geometry.vertices[vertexIndex].clone();
+        var globalVertex = localVertex.applyMatrix4(cube.matrix);//.multiplyVector3(localVertex);
+        var directionVector = globalVertex.sub( cube.position );
+        var ray = new THREE.Raycaster( cube.position.clone(), directionVector.clone().normalize() );
+        var collisionResults = ray.intersectObjects( collidableMeshList );
+        
+        if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() ) 
+        {
+            intersects = intersects + 1;
+        }
+    }
+    //console.log(false);
+    return intersects;
+}
+
