@@ -21,6 +21,10 @@ frictionMove = 0.2;
 CoR = 0.5;% bara ett tal mellan 0-1, studskoefficient
 
 % Kraftpåverkans konstanter
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> Oskars-Branch
 force = zeros(values,3);
 force(1,1) = 100; %newton
 force(1,2) = 100; %newton
@@ -36,6 +40,15 @@ forcey(1:values) = force(1:values,2); %Newton
 forcez(1:values) = force(1:values,3); %Newton
 radie = 0.8; %Meter
 
+<<<<<<< HEAD
+=======
+=======
+force = zeros(values,1);
+force(1) = 100; %newton
+forceAngle = 1;%radian
+radie = 0.2; %Meter
+>>>>>>> master
+>>>>>>> Oskars-Branch
 % Om radie < Hmin -> tippar bakåt, Om radie > Hmax -> tippar framåt
 % Rotation rund x-axeln
 % Oklart vad som gäller? Snacka med ULF
