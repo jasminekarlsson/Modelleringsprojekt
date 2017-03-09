@@ -36,7 +36,7 @@
       var accz = 0, velz = 0, posz = 0;
       var rotmatx, rotmaty, rotmatz, trans1mat, trans2mat;
       //Start value Force
-      var force = new THREE.Vector3(1000, 0, 0);
+      var force = new THREE.Vector3(1000, 0, 1000);
       var forceInit = force.clone();
       
       //Define Hmin/Hmax
@@ -114,13 +114,13 @@
       
       function handleKeys() {
         // Left
-        if(pressed[37]) phi += 0.01;
+        if(pressed[37]) phi -= 0.01;
         // Right
-        if(pressed[39]) phi -= 0.01;
+        if(pressed[39]) phi += 0.01;
         // Up
-        if(pressed[38]) theta += 0.01;
+        if(pressed[38]) theta -= 0.01;
         // Down
-        if(pressed[40]) theta -= 0.01;
+        if(pressed[40]) theta += 0.01;
       }
       
       document.onkeydown = handleDown;

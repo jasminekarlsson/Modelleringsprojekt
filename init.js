@@ -143,7 +143,7 @@ function init()
         
         // Set up the camera
         camera.position.x = 0;
-        camera.position.y = -mouseY*10;
+        camera.position.y = mouseY*10;
         //Startposition för golvets mittpunkt       
         golv.position.x = 0;
         golv.position.y = -2;
