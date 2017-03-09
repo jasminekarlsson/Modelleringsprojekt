@@ -1,5 +1,4 @@
-
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
   <head>
     <title>Three.js Planetary system</title>
@@ -9,140 +8,70 @@
   <body>
 
     <div id="container"></div>
+    <script src="three.js"></script>
+    <script src="OrbitControls.js"></script>
+    <script src="stats.min.js"></script>
+    <script src="Detector.js"></script>   
+    <script src="funktioner.js"></script>
+    <script src="jquery.js"></script>
+    <script src="min.js"></script>
+
 
     <!-- <script src="three.min.js"></script> -->
-    <script src="three.js"></script>
+    
     <script>
       
-      // Lots of global variables. (This is JavaScript. No use complaining.)
-      var container;
-      var camera, scene, renderer;
-      
-      var clock = new THREE.Clock(true);
-      
-      var mouseX = 0, mouseY = 0;
-      var windowHalfX = window.innerWidth / 2;
-      var windowHalfY = window.innerHeight / 2;     
-      
-      // Object3D ("Group") nodes and Mesh nodes
-      var sceneRoot = new THREE.Group();
-      var block;
-      var plan;
-      var geom;
-      var v0,v1,v2,v3,v4,v5,v6,v7;
-      var object; //3D
-      var golv; //3D
-      var block3D; 
-      
-      //Rotation startvärden
-      var accrotx = 0, velrotx = 0, anglerotx = 0;
-      var accroty = 0, velroty = 0, angleroty = 0;
-      var accrotz = 0, velrotz = 0, anglerotz = 0;
-      
-      //Translation startvärden
-      var accx = 0, velx = 0, posx = 0;
-      var accy = 0, vely = 0, posy = 0;
-      var accz = 0, velz = 0, posz = 0;
+        // http://www.student.itn.liu.se/~jonjo573/Modelleringsprojekt-master/start.html
+        // https://solutiondesign.com/blog/-/blogs/webgl-and-three-js-texture-mappi-1
+		// http://learningthreejs.com/blog/2012/01/20/casting-shadows/
 
-      var rotmatx, rotmaty, rotmatz, trans1mat, trans2mat;
-      //Start value Force
-      var force = new THREE.Vector3(0, 0, -1000);
-      var forceInit = new THREE.Vector3(0, 0, -1000);
-      
-      //Define Hmin/Hmax
-      var Hminx;
-      var Hmaxx;
-      var Hminy;
-      var Hmaxy;
-      var Hminz;
-      var Hmaxz;
-      //
-      var step = 1/200; 
-
-
-
-      function onWindowResize() 
-      {
-        windowHalfX = window.innerWidth / 2;
-        windowHalfY = window.innerHeight / 2;
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize( window.innerWidth, window.innerHeight );
-      }
-
-      function translateCube(cube , translationVector ,object){
-        //console.log(translationVector);
-        trans1mat.makeTranslation(translationVector.x*step,translationVector.y*step,translationVector.z*step);
-        
-        for( index = 0; index < 8; index++){
-
-            cube.vertices[index].applyMatrix4(trans1mat);
-         
-            // cube.vertices[index].setX(translationVector.x - geom.vertices[index].x);
-            // cube.vertices[index].setY(translationVector.y - geom.vertices[index].y);
-            // cube.vertices[index].setZ(translationVector.z - geom.vertices[index].z);
-
-          }
-
-        cube.verticesNeedUpdate = true;
-        object.updateMatrix();
-      }
-
-    function boxOnGround(cube){
-        
-        var counter = 0;
-        for( index = 0; index < 8; index++){
-
-            if(cube.vertices[index].y < -2){
-              counter++;
-              if (counter == 3){
-                return true;
-              }
-
-            }
-
-          }
-        return false;
-      }
-
-
-      function rotationCube(cube, rotationVector, translationVector, object){
-
-        trans1mat.makeTranslation(translationVector.x,translationVector.y,translationVector.z);
-        trans2mat.makeTranslation(-translationVector.x,-translationVector.y,-translationVector.z);
-        
-        rotmatx.makeRotationX(rotationVector.x*step);
-        rotmaty.makeRotationY(rotationVector.y*step);
-        rotmatz.makeRotationZ(rotationVector.z*step);
-
-          for(idx = 0; idx<8; idx++)
-          {
-            geom.vertices[idx].applyMatrix4(trans2mat);
-            geom.vertices[idx].applyMatrix4(rotmatx);
-            geom.vertices[idx].applyMatrix4(rotmaty);
-            geom.vertices[idx].applyMatrix4(rotmatz);
-            geom.vertices[idx].applyMatrix4(trans1mat);
-            
-          }
-          cube.verticesNeedUpdate = true;
-          object.updateMatrix();
-      }
-      
       function init() 
       {
-        container = document.getElementById( 'container' );
-        camera = new THREE.PerspectiveCamera( 60, window.innerWidth/window.innerHeight, 0.1, 100 );
-        camera.position.z = 10;
+        camera = new THREE.PerspectiveCamera( 60, window.innerWidth/window.innerHeight, 0.1, 1500 );
+        
+        controls = new THREE.OrbitControls( camera ); // -----------------
+        controls.addEventListener( 'change', render ); //----------------
         scene = new THREE.Scene();
-                
-        // MESH block
-        var geometryBlock = new THREE.PlaneGeometry( 2, 2 );
-        var materialBlock = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: false });
-        //materialBlock.wireframe = true;
-        block = new THREE.Mesh( geometryBlock, materialBlock );
-        // MESH object 3D ----------------------------------------------------
-        var meshMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
-        meshMaterial.wireframe = true;
+          
+        gparent = new THREE.Object3D();  //----------------
+        scene.add( gparent );  //----------------
+        parent = new THREE.Object3D();  //----------------
+        gparent.add( parent );  //----------------
+        parent.add( camera ); //----------------
+        camera.position.set(0, 0, 20); //----------------
+
+          // ------------TEXTURE------------------------
+        var golvTex = new THREE.TextureLoader().load("textures/concrete2.jpg");
+        golvTex.wrapS = THREE.RepeatWrapping;
+        golvTex.wrapT = THREE.RepeatWrapping;
+        golvTex.repeat.set(1, 1);
+
+
+    
+          // world in cube
+        /*var imagePrefix = "textures/world2/";
+        var directions = ["posx", "negx", "posy", "negy", "posz", "negz"];
+        var imageSuffix = ".png";
+        
+        var imageURLs = [];
+        for (var i = 0; i < 6; i++)
+            imageURLs.push(imagePrefix + directions[i] + imageSuffix);
+
+        var textureCube = THREE.ImageUtils.loadTextureCube(imageURLs);
+        var shader = THREE.ShaderLib["cube"];
+        shader.uniforms["tCube"].value = textureCube;
+
+        var materialEnv = new THREE.ShaderMaterial({
+            fragmentShader: shader.fragmentShader,
+            vertexShader: shader.vertexShader,
+            uniforms: shader.uniforms,
+            depthWrite: false,
+            side: THREE.BackSide
+            }); */ 
+                     
+
+          // MESH object 3D ----------------------------------------------------
+
         geom = new THREE.Geometry(); 
         v0 = new THREE.Vector4(-2,-2,-2, 1);
         v1 = new THREE.Vector4( 2,-2,-2, 1);
@@ -161,44 +90,125 @@
         geom.vertices.push(v6);
         geom.vertices.push(v7);
         geom.faces.push( new THREE.Face3(0,1,2) ); // face0
-        geom.faces.push( new THREE.Face3(0,2,3) ); // face0
+        geom.faces.push(new THREE.Face3(0, 2, 3)); // face0
+
         geom.faces.push( new THREE.Face3(1,5,6) ); // face1
-        geom.faces.push( new THREE.Face3(6,2,1) ); // face1
+        geom.faces.push(new THREE.Face3(6, 2, 1)); // face1
+
         geom.faces.push( new THREE.Face3(2,7,3) ); // face2
-        geom.faces.push( new THREE.Face3(2,6,7) ); // face2
+        geom.faces.push(new THREE.Face3(2, 6, 7)); // face2
+
         geom.faces.push( new THREE.Face3(0,4,5) ); // face3
-        geom.faces.push( new THREE.Face3(0,5,1) ); // face3
+        geom.faces.push(new THREE.Face3(0, 5, 1)); // face3
+
         geom.faces.push( new THREE.Face3(0,3,4) ); // face4
-        geom.faces.push( new THREE.Face3(3,7,4) ); // face4
+        geom.faces.push(new THREE.Face3(3, 7, 4)); // face4
+
         geom.faces.push( new THREE.Face3(4,7,5) ); // face5
         geom.faces.push( new THREE.Face3(5,7,6) ); // face5
         geom.computeFaceNormals();
         geom.computeVertexNormals();
-        object = new THREE.Mesh( geom,meshMaterial);
-        object.doubleSided = true;
+
+        //var meshMaterial = new THREE.MeshPhongMaterial({ map: objectTex });;
+          //meshMaterial.wireframe = true;
+
+		
+        var face0 = [new THREE.Vector2(0, .666),  new THREE.Vector2(.5, .666), new THREE.Vector2(.5, 1),    new THREE.Vector2(0, 1)]; //defines varje subimage för varje face
+        var face1 = [new THREE.Vector2(.5, .666), new THREE.Vector2(1, .666),  new THREE.Vector2(1, 1),     new THREE.Vector2(.5, 1)];
+        var face2 = [new THREE.Vector2(0, .333),  new THREE.Vector2(.5, .333), new THREE.Vector2(.5, .666), new THREE.Vector2(0, .666)];
+        var face3 = [new THREE.Vector2(.5, .333), new THREE.Vector2(1, .333),  new THREE.Vector2(1, .666),  new THREE.Vector2(.5, .666)];
+        var face4 = [new THREE.Vector2(0, 0),     new THREE.Vector2(.5, 0),    new THREE.Vector2(.5, .333), new THREE.Vector2(0, .333)];
+        var face5 = [new THREE.Vector2(.5, 0),    new THREE.Vector2(1, 0),     new THREE.Vector2(1, .333),  new THREE.Vector2(.5, .333)];
+		
+        geom.faceVertexUvs[0] = []; //tar bort eventuell UV mapping som redaen existerar på kuben
+
+        geom.faceVertexUvs[0][0] = [face0[1], face0[0], face0[3]];
+        geom.faceVertexUvs[0][1] = [face0[1], face0[3], face0[2]];
+
+        geom.faceVertexUvs[0][2] = [face1[1], face1[0], face1[3]];
+        geom.faceVertexUvs[0][3] = [face1[3], face1[2], face1[1]];
+
+        geom.faceVertexUvs[0][4] = [face2[0], face2[2], face2[3]];
+        geom.faceVertexUvs[0][5] = [face2[0], face2[1], face2[2]];
+
+        geom.faceVertexUvs[0][6] = [face3[0], face3[3], face3[2]];
+        geom.faceVertexUvs[0][7] = [face3[0], face3[2], face3[1]];
+
+        geom.faceVertexUvs[0][8] = [face4[0], face4[1], face4[3]];
+        geom.faceVertexUvs[0][9] = [face4[1], face4[2], face4[3]];
+
+        geom.faceVertexUvs[0][10] = [face5[0], face5[3], face5[1]];
+        geom.faceVertexUvs[0][11] = [face5[1], face5[3], face5[2]];
+
+
+        //var objectTex = new THREE.TextureLoader().load("textures/crates1.jpeg");
+
+        var material = new THREE.MeshPhongMaterial({ map: THREE.ImageUtils.loadTexture('textures/crates1.jpeg') });
+        object = new THREE.Mesh( geom,material);
+       // object.doubleSided = true;
         block3D = new THREE.Object3D();
         block3D.add(object);
         block3D.matrixAutoUpdate = true;
       
+          
         // MESH golv 3D ---------------------------------------------------
-        var geometryGolv = new THREE.BoxGeometry(16,0.1,10); 
-        var materialGolv = new THREE.MeshBasicMaterial({ color: 0x99FF00 });
-        golv = new THREE.Mesh(geometryGolv, materialGolv); 
+        var geometryGolv = new THREE.BoxGeometry(20,0.2,20); 
+        var materialGolv = new THREE.MeshPhongMaterial({ map: golvTex });
+        golv = new THREE.Mesh(geometryGolv, materialGolv);
+        golv.position.x = 0;
+        golv.position.y = -2;
+
+
+        // ------------------Enviroment ----------------------
+       /*var geometryEnv = new THREE.CubeGeometry(30,30, 30);
+       var enviroment = new THREE.Mesh(geometryEnv, materialEnv);
+       enviroment.position.y = 5*/
+
+        // -----------------------world -------------------------
+        var geometry = new THREE.SphereGeometry(50, 32, 32)
+        var material = new THREE.MeshPhongMaterial({ map: THREE.ImageUtils.loadTexture('textures/world2/world2.jpg'), side: THREE.BackSide })
+        var world = new THREE.Mesh(geometry, material)
+
+        world.position.y = 10
         
+
+          // --------------- LIGHT ----------------
+       var lightAm = new THREE.AmbientLight(0xffffff, 0.7);
+
+		var lightDi2 = new THREE.DirectionalLight( 0xffffff, 0.5);
+		lightDi2.position.set(-30,70,70);
+		
+		// ----------------SHADOW-------------
+		lightDi2.castShadow = true; 
+		
+		object.castShadow = true; 
+		golv.receiveShadow = true; 
+		
+
+
         // Top-level node
         scene.add( sceneRoot );
         
         // Sun branch
         sceneRoot.add( object ); //New node for translation transformation
         sceneRoot.add(golv); 
+        sceneRoot.add(lightAm);
+		sceneRoot.add(lightDi2);
+		sceneRoot.add(world);
+
         
-        renderer = new THREE.WebGLRenderer();
-        renderer.setClearColor( 0x000000 );
-        renderer.setPixelRatio( window.devicePixelRatio );
+        // renderer -------------------------
+        renderer = new THREE.WebGLRenderer( { antialias: false } );
         renderer.setSize( window.innerWidth, window.innerHeight );
+		renderer.shadowMapEnabled = true; 
+		renderer.shadowMapType = THREE.PCFSoftShadowMap;
+		
+        container = document.getElementById( 'container' );
         container.appendChild( renderer.domElement );
         window.addEventListener( 'resize', onWindowResize, false );
         
+       
+		
         rotmatx = new THREE.Matrix4();
         rotmatx.identity();
         rotmaty = new THREE.Matrix4();
@@ -209,101 +219,21 @@
         trans1mat.identity();
         trans2mat = new THREE.Matrix4();
         trans2mat.identity();
-
         var startTranslation = new THREE.Vector3(0,0/step,0);
         translateCube(geom, startTranslation, block3D);
-        //var startRotation = new THREE.Vector3(0 ,0 ,0);
-        //rotationCube(geom, startRotation,startTranslation,block3D);
+        // var startRotation = new THREE.Vector3((Math.PI/4)/step ,0 ,0);
+        // rotTransVector= new THREE.Vector3((geom.vertices[0].x + geom.vertices[6].x)/2, (geom.vertices[0].y + geom.vertices[6].y)/2, (geom.vertices[0].z + geom.vertices[6].z)/2);
+        // rotationCube(geom, startRotation,rotTransVector,block3D);
+        
         posx = startTranslation.x;
         posy = startTranslation.y;
         posz = startTranslation.z;
+        
+        
+        
+        
       }    
-
-
-      function rotationVertex(cube){
-
-        var vertexArray = [];
-        for( index = 0; index < 8; index++){
-
-          if( cube.vertices[index].y <= -2){
-
-            vertexArray.push(index);
-            
-          }
-        }
-        var rotVertex = vertexArray[0];
-        for( arrayIndex = 0 ; arrayIndex < vertexArray.length; arrayIndex++){
-
-          if(force.x < 0 && force.z < 0){
-              if(Math.abs(force.x) > Math.abs(force.z)){
-                if(cube.vertices[vertexArray[arrayIndex]].x < cube.vertices[rotVertex].x){
-                  rotVertex = vertexArray[arrayIndex];
-                }
-              }
-              else{
-                if(cube.vertices[vertexArray[arrayIndex]].z < cube.vertices[rotVertex].z){
-                  rotVertex = vertexArray[arrayIndex];
-                }
-
-              }
-          }else if (force.x >= 0 && force.z >= 0){
-            if(Math.abs(force.x) > Math.abs(force.z)){
-                if(cube.vertices[vertexArray[arrayIndex]].x > cube.vertices[rotVertex].x){
-                  rotVertex = vertexArray[arrayIndex];
-                }
-              }
-              else{
-                if(cube.vertices[vertexArray[arrayIndex]].z > cube.vertices[rotVertex].z){
-                  rotVertex = vertexArray[arrayIndex];
-                }
-
-              }
-
-          }else if (force.x >= 0 && force.z < 0){
-            if(Math.abs(force.x) > Math.abs(force.z)){
-                if(cube.vertices[vertexArray[arrayIndex]].x > cube.vertices[rotVertex].x){
-                  rotVertex = vertexArray[arrayIndex];
-                }
-              }
-              else{
-                if(cube.vertices[vertexArray[arrayIndex]].z < cube.vertices[rotVertex].z){
-                  rotVertex = vertexArray[arrayIndex];
-                }
-
-              }
-
-          }else if (force.x < 0 && force.z >= 0){
-            if(Math.abs(force.x) > Math.abs(force.z)){
-                if(cube.vertices[vertexArray[arrayIndex]].x < cube.vertices[rotVertex].x){
-                  rotVertex = vertexArray[arrayIndex];
-                }
-              }
-              else{
-                if(cube.vertices[vertexArray[arrayIndex]].z > cube.vertices[rotVertex].z){
-                  rotVertex = vertexArray[arrayIndex];
-                }
-
-              }
-
-          }
-
-        }
-        return rotVertex;
-
-      }
-
-      function ontheGround(cube){
-
-        for( index = 0; index < 8; index++){
-
-          if( cube.vertices[index].y <= -2){
-
-            return index;
-          }
-        }
-        return -1;
-      }
-
+      
       function render()
       {     
         var gravity = 9.82; 
@@ -326,22 +256,18 @@
         //Konstanter mellan block och golv
         var frictionStill = 5;
         var frictionMove = 3;
-        var CoR = 0.6; // ett tal mellan 0-1, studskoefficient
+        var CoR = 0.5; // ett tal mellan 0-1, studskoefficient
         
         // Set up the camera
-        camera.position.x = 0;
         camera.position.y = -mouseY*10;
-        camera.lookAt( scene.position );
-          //Startposition för golvets mittpunkt       
-        golv.position.x = 0;
-        golv.position.y = -2;
+           
+        
 
         //Checking if any vertex touched the ground
         var onGround = ontheGround(geom);
         //console.log(onGround);
         //Checking if an entire side of the box is on the ground
         var sideOnGround = boxOnGround(geom);
-
         var rotVertexID = rotationVertex(geom);
         //console.log('Rotation runt vertex nr ' + rotVertexID);
         
@@ -349,74 +275,134 @@
         //Om radie < Hmin -> tippar bakåt, Om radie > Hmax -> tippar framåt
         if(force.x != 0) //<-- HÄR SKA DET SKAPAS FÖR X, Y OCH Z -->
         {
-          Hminx = (forceInit.x*height/2 - mass*gravity*width/2 - frictionStill*height/2)/forceInit.x;
-          Hmaxx = (forceInit.x*height/2 + mass*gravity*width/2 - frictionStill*height/2)/forceInit.x;
+          Hminx = (Math.abs(forceInit.x)*height/2 - mass*gravity*width/2 - frictionStill*height/2)/Math.abs(forceInit.x);
+          Hmaxx = (Math.abs(forceInit.x)*height/2 + mass*gravity*width/2 - frictionStill*height/2)/Math.abs(forceInit.x);
           //console.log('Hmin = ' + Hmin + ', Hmax = ' + Hmax);
         }
         if(force.y != 0) //<-- HÄR SKA DET SKAPAS FÖR X, Y OCH Z -->
         {
-          Hminy = (forceInit.y*height/2 - mass*gravity*width/2 - frictionStill*height/2)/forceInit.y;
-          Hmaxy = (forceInit.y*height/2 + mass*gravity*width/2 - frictionStill*height/2)/forceInit.y;
+          Hminy = (Math.abs(forceInit.y)*height/2 - mass*gravity*width/2 - frictionStill*height/2)/Math.abs(forceInit.y);
+          Hmaxy = (Math.abs(forceInit.y)*height/2 + mass*gravity*width/2 - frictionStill*height/2)/Math.abs(forceInit.y);
           //console.log('Hmin = ' + Hmin + ', Hmax = ' + Hmax);
         }
         if(force.z != 0) //<-- HÄR SKA DET SKAPAS FÖR X, Y OCH Z -->
         {
-          Hminz = (forceInit.z*height/2 - mass*gravity*width/2 - frictionStill*height/2)/forceInit.z;
-          Hmaxz = (forceInit.z*height/2 + mass*gravity*width/2 - frictionStill*height/2)/forceInit.z;
+          Hminz = (Math.abs(forceInit.z)*height/2 - mass*gravity*width/2 - frictionStill*height/2)/Math.abs(forceInit.z);
+          Hmaxz = (Math.abs(forceInit.z)*height/2 + mass*gravity*width/2 - frictionStill*height/2)/Math.abs(forceInit.z);
           //console.log('Hmin = ' + Hmin + ', Hmax = ' + Hmax);
         }
-
-        //console.log('radius = ' + radius + ' Hmax = ' + Hmax);
+        // console.log('radius ' + radius + ' Hmin ' + Hminx);
+        // console.log('radius = ' + radius + ' Hmaxx = ' + Hmaxx);
+        // console.log('radius = ' + radius + ' Hmaxy = ' + Hmaxy);
+        // console.log('radius = ' + radius + ' Hmaxz = ' + Hmaxz);
         if (radius > Hmaxx || radius > Hmaxy || radius > Hmaxz) //faller framåt
         {
-          //console.log('Faller framåt');
+         // console.log('Faller framåt');
           //Rotation kring x-axeln, framåt
           if (radius > Hmaxz){
-          accrotx = (1/inertiax)*(force.x*radius) - gravity*mass*Math.cos(anglerotx);
-          velrotx = velrotx + step*accrotx;
-          anglerotx = anglerotx - step*velrotx;
-          }
-          //Rotation kring y-axeln, framåt
-          
-          accroty = (1/inertiay)*(force.y*radius) - frictionMove*velroty;
-          velroty = velroty + step*accroty;
-          angleroty = angleroty - step*velroty;
-          
-          //Rotation kring z-axeln, framåt
-          if (radius > Hmaxx){
-          accrotz = (1/inertiaz)*(force.z*radius) - gravity*mass*Math.cos(anglerotz);
-          velrotz = velrotz + step*accrotz;
-          anglerotz = anglerotz - step*velrotz;
-          }
-          
-          
-          //När blocket når marken i x-led --> studs 
-          // <-- KOLLA PÅ ALLA VERTEX HÄR -->
-          if(sideOnGround)
-          {
-            velrotx = -velrotx*CoR;
-            console.log('velrotx = ' + velrotx);
-            if(velrotx < 0.01)
+            accrotx = (1/inertiax)*(force.z*radius);// - gravity*mass*Math.sin(anglerotx);
+            velrotx = velrotx + step*accrotx;
+            anglerotx = anglerotx + step*velrotx;
+            if(angleroty > Math.PI/2){
+              angleroty = angleroty - (Math.PI/2);
+            }
+          if (sideOnGround){
+           // console.log('Jag har en sida på marken');
+            accrotx = 0;  
+            velrotx = -velrotz*CoR;
+            if(Math.abs(velrotx) < 0.001)
             {
               velrotx = 0;
             }
+          }else if(onGround != -1){
+            if(rotForward(anglerotx)){
+              accrotx = (1/inertiax)*(force.z*radius) + gravity*mass*Math.cos(anglerotx);
+              velrotx = velrotx + step*accrotx;
+              anglerotx = anglerotx + step*velrotx;
+              if(anglerotx > 0){
+                accrotx = (1/inertiax)*(force.z*radius) + gravity*mass*Math.cos(anglerotx);
+              } else{
+                accrotx = (1/inertiax)*(force.z*radius) - gravity*mass*Math.cos(anglerotx);
+              }
+            }else{
+              if(anglerotx > 0){
+                accrotx = (1/inertiax)*(force.z*radius) - gravity*mass*Math.cos(anglerotx);
+              } else{
+                accrotx = (1/inertiax)*(force.z*radius) + gravity*mass*Math.cos(anglerotx);
+              }
+              velrotx = velrotx + step*accrotx*mass;
+              anglerotx = anglerotx + step*velrotx;
+            }
           }
+        }
+          //Rotation kring y-axeln, framåt
+          if(onGround != -1){
+            accroty = (1/inertiay)*(force.y*radius) - frictionMove*velroty;
+            velroty = velroty + step*accroty;
+            angleroty = angleroty + step*velroty;
+            if(anglerotx > Math.PI/2){
+              anglerotx = anglerotx - (Math.PI/2);
+            }
+          }else{
+            accroty = (1/inertiay)*(force.y*radius);
+            velroty = velroty + step*accroty;
+            angleroty = angleroty - step*velroty;
+          }
+          //Rotation kring z-axeln, framåt
+          if (radius > Hmaxx){
+            //console.log('jag roterar runt z');
+            accrotz = (1/inertiaz)*(force.x*radius);// + gravity*mass*Math.sin(anglerotz);
+            //console.log('accrotz = ' + accrotz);
+          if (sideOnGround){
+            //console.log('Jag har en sida på marken');
+            accrotz = 0;  
+            velrotz = -velrotz*CoR;
+            //console.log('velrotz = ' + velrotz);
+            if(Math.abs(velrotz) < 0.001)
+            {
+              velrotz = 0;
+            }
+          }else if(onGround != -1){
+            if(rotForward(anglerotz)){
+              if(anglerotz > 0){
+                accrotz = (1/inertiaz)*(force.x*radius) + gravity*mass*Math.cos(anglerotz);
+              } else{
+                accrotz = (1/inertiaz)*(force.x*radius) - gravity*mass*Math.cos(anglerotz);
+              }
+            }else{
+              if(anglerotz > 0){
+                accrotz = (1/inertiaz)*(force.x*radius) - gravity*mass*Math.cos(anglerotz);
+              } else{
+                accrotz = (1/inertiaz)*(force.x*radius) + gravity*mass*Math.cos(anglerotz);
+              }
+            
+            }
+          }
+          velrotz = velrotz + step*accrotz;
+          anglerotz = anglerotz + step*velrotz;
+         // console.log('velorotz = ' + velrotz);
+          if(anglerotz > Math.PI/2){
+              anglerotz = anglerotz - (Math.PI/2);
+          }
+        }
+          //När blocket når marken i x-led --> studs 
+          // <-- KOLLA PÅ ALLA VERTEX HÄR -->
+       
           //När blocket når marken i z-led --> studs 
           //
           // <-- KOLLA PÅ ALLA VERTEX HÄR -->
           //
-          if(sideOnGround)
-          {
-            velrotz = -velrotz*CoR;
-            console.log('velrotz = ' + velrotz);
-            if(velrotz < 0.1)
-            {
-              velrotz = 0;
-            }
-          }
+          
+            // velrotz = -velrotz*CoR;
+            // console.log('velrotz = ' + velrotz);
+            // if(velrotz < 0.1)
+            // {
+            //   velrotz = 0;
+            // }
+          
         
           //Translation i x-led
-          if(forceInit.x >= frictionStill)
+          if(Math.abs(forceInit.x) >= frictionStill)
           {
             // Beräknar accelerationen i x-led
             // Om den är i luften
@@ -439,7 +425,6 @@
           // <-- BORDE KUNNA KNUFFAS UPPÅT ÄVEN OM DEN STÅR PÅ MARKEN -->
           if(onGround == -1)
           {
-
             //console.log('jag är i luften');
             accy = 1/mass*(force.y-gravity*mass);
             vely = vely + step*accy;
@@ -449,7 +434,8 @@
           else //Studs 
           {
             //console.log('jag är på marken, STOPPA MIG!');
-            vely = -vely * CoR; 
+            accy = 1/mass*force.y;
+            vely = -vely * CoR + step*accy; 
             posy = posy + step*vely;
             if(vely < 0.01)
             {
@@ -459,7 +445,7 @@
           } 
           
           //Translation i z-led
-          if(forceInit.z >= frictionStill)
+          if(Math.abs(forceInit.z) >= frictionStill)
           {
             // Beräknar accelerationen i 2-led
             // Om den är i luften
@@ -478,9 +464,9 @@
           }
           
         }
-        else if(radius < Hmin) //Roterar bakåt
+        else if(radius < Hminx || radius < Hminy || radius < Hminz) //Roterar bakåt
         {
-          console.log('Faller bakåt');
+         // console.log('Faller bakåt');
           m = 1;
           M = 1;
           
@@ -506,7 +492,7 @@
           //Translation i y-led
           if(onGround == -1)
           {
-            accy = 1/mass*((Math.sin(forceangle)*force)-gravity*mass);
+            accy = 1/mass*(force.y-gravity*mass);
             vely = vely + step*accy;
             posy = posy + step*vely;
           }
@@ -524,10 +510,10 @@
         }
         else //Translaterar endast
         {
-          console.log('Translaterar');
+          //console.log('Translaterar');
           //Translation i x-led
           // console.log(' forceInit.x = ' + forceInit.x + 'frictionStill = ' + frictionStill);
-          if(forceInit.x >= frictionStill)
+          if(Math.abs(forceInit.x) >= frictionStill)
           {
             // Beräknar accelerationen i x-led
             // Om den är i luften
@@ -539,7 +525,7 @@
             }else{  // Om den är på marken
               accx = 1/mass*(force.x - frictionMove*velx);
             }
-            console.log('accx = ' + accx);
+            //console.log('accx = ' + accx);
             // Beräknar hastigheten i x-led
             velx = velx + step*accx;
             // Beräknar positionen i x-led
@@ -551,7 +537,7 @@
           // <-- BORDE KUNNA KNUFFAS UPPÅT ÄVEN OM DEN STÅR PÅ MARKEN -->
           if(onGround == -1)
           {
-            console.log('jag är i luften');
+            //console.log('jag är i luften');
             accy = 1/mass*(force.y-gravity*mass);
             vely = vely + step*accy;
             posy = posy + step*vely;
@@ -559,7 +545,7 @@
           }
           else //Studs 
           {
-            console.log('jag är på marken, STOPPA MIG!');
+            //console.log('jag är på marken, STOPPA MIG!');
             vely = -vely * CoR; 
             posy = posy + step*vely;
             
@@ -584,22 +570,17 @@
             posz = posz + step*velx;
           }
         }
-
                 
         //console.log('rotx = ' + velrotx + ' roty = ' + velroty + ' rotz = ' + velrotz );
         //console.log('posx = ' + posx + ' posy = ' + posy + ' posz = ' + posz );
         // console.log('onGround = ' + onGround);
         // console.log('vertex 0 position : ' + geom.vertices[0].y);
-        //Rotation rund samtliga axlar
-        // block.rotation.z = anglerotx;
-        //console.log('rotation kring x ' + velrotx);
-        rotationVector = new THREE.Vector3(velrotx,velroty,velrotz);
+        //Rotation rund samtliga axlar negativt för att det ska bli rätt med enhetscirkeln
+        rotationVector = new THREE.Vector3(-velrotx,-velroty,-velrotz);
         if (onGround != -1) {
-
           rotTransVector= new THREE.Vector3(geom.vertices[rotVertexID].x, geom.vertices[rotVertexID].y, geom.vertices[rotVertexID].z);
         
           //console.log( ' onGround position ' + geom.vertices[onGround].x +' '+ geom.vertices[onGround].y + ' ' +geom.vertices[onGround].z);
-
         }else{
           rotTransVector= new THREE.Vector3((geom.vertices[0].x + geom.vertices[6].x)/2, (geom.vertices[0].y + geom.vertices[6].y)/2, (geom.vertices[0].z + geom.vertices[6].z)/2);
         }
@@ -616,25 +597,30 @@
         force.setZ(0);
         //objectTranslation.position.y = objectTranslation.position.y*Math.sin(angle);
         // Render the scene
-        renderer.render( scene, camera );
+        
+          handleKeys();//---------------------
+          gparent.rotation.y = phi; //---------------------
+          parent.rotation.x = theta; //---------------------
+        renderer.render( scene, camera ); //---------------------
+        collision(); 
       }
+      
+      
+        
+   
       
       function animate() 
       {
         requestAnimationFrame( animate ); // Request to be called again for next frame
-        render();
+        controls.update(); //---------------------
+        collision(); 
       }
-
+      
       
       init();    // Set up the scene
       animate(); // Enter an infinite loop
       window.requestAnimationFrame(animate);
       
-    </script>
-  
-  
-  
-  
+    </script>  
   </body>
 </html>
-
