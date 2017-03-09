@@ -26,13 +26,10 @@
    
       function init() 
       {
-
-        console.log(gravity);
         //container = document.getElementById( 'container' );
         camera = new THREE.PerspectiveCamera( 60, window.innerWidth/window.innerHeight, 0.1, 100 );
         //camera.position.z = 10;
         //scene = new THREE.Scene();
-        
         
         controls = new THREE.OrbitControls( camera ); // -----------------
         controls.addEventListener( 'change', render ); //----------------
@@ -121,15 +118,13 @@
         trans1mat.identity();
         trans2mat = new THREE.Matrix4();
         trans2mat.identity();
-        var startTranslation = new THREE.Vector3(0,4,0);
+        var startTranslation = new THREE.Vector3(0,0,0);
         geom.translate(startTranslation.x, startTranslation.y, startTranslation.z);
         geom.verticesNeedUpdate = true;
 
         posx = startTranslation.x;
         posy = startTranslation.y;
-        posz = startTranslation.z;
-       
-        
+        posz = startTranslation.z;   
       }
       
       function render()
@@ -137,7 +132,7 @@
         
         // Variabler för att räkna ut acceleration, hastighet och vinkel
         //Kraftpåverkande konstanter
-        var radius = 3;
+        var radius = 0;
         
         //Blockets konstanter  
         var mass = 5;
@@ -150,8 +145,8 @@
         var inertiaz = mass/3*(height*height+width*width);
         
         //Konstanter mellan block och golv
-        var frictionStill = 5;
-        var frictionMove = 3;
+        var frictionStill = 15;
+        var frictionMove = 13;
         var CoR = 0.8; // ett tal mellan 0-1, studskoefficient
         
         // Set up the camera
@@ -189,14 +184,15 @@
           Hmaxz = (Math.abs(forceInit.z)*height/2 + mass*gravity*width/2 - frictionStill*height/2)/Math.abs(forceInit.z);
           //console.log('Hmin = ' + Hmin + ', Hmax = ' + Hmax);
         }
-        // console.log('radius ' + radius + ' Hmin ' + Hminx);
-         // console.log('radius = ' + radius + ' Hminx = ' + Hminx);
-         // console.log('radius = ' + radius + ' Hminy = ' + Hminy);
-         // console.log('radius = ' + radius + ' Hminz = ' + Hminz);
+        // console.log('radius = ' + radius + ' Hmin = ' + Hminx);
+        // console.log('radius = ' + radius + ' Hminx = ' + Hminx);
+        // console.log('radius = ' + radius + ' Hminy = ' + Hminy);
+        // console.log('radius = ' + radius + ' Hminz = ' + Hminz);
+
         if (radius > Hmaxx || radius > Hmaxy || radius > Hmaxz) //faller framåt
         {
 
-          //console.log('Faller framåt');
+          console.log('Faller framåt');
           //Rotation kring x-axeln, framåt 
           rotxValues = ForwardRotation(accrotx, velrotx, anglerotx, radius, Hmaxx, inertiax, force.z, sideOnGround, onGround, haveRotatedForwardx, CoR, gravity, mass);
           
@@ -215,10 +211,10 @@
           }
           
           //Rotation kring z-axeln, framåt
-           rotzValues = ForwardRotation(accrotz, velrotz, anglerotz, radius, Hmaxx, inertiaz, force.x, sideOnGround, onGround, haveRotatedForwardz, CoR, gravity, mass);
+          rotzValues = ForwardRotation(accrotz, velrotz, anglerotz, radius, Hmaxx, inertiaz, force.x, sideOnGround, onGround, haveRotatedForwardz, CoR, gravity, mass);
           
           //Translation i x-led
-          transxValues = TranslationForward(accx, velx, posx, force.x, forceInit.x, frictionStill, frictionMove, onGround, mass );
+          transxValues = TranslationForward(accx, velx, posx, force.x, forceInit.x, frictionStill, frictionMove, onGround, mass);
           
           //Translation i y-led
           transyValues = TranslationGravity(accy, vely, posy, mass, force.y, gravity, onGround, step, CoR);
@@ -226,17 +222,19 @@
           //Translation i z-led
           transzValues = TranslationForward(accz, velz, posz, force.z, forceInit.z, frictionStill, frictionMove, onGround, mass);        
 
-           if(anglerotz >= Math.PI/4){
-              haveRotatedForwardz = true;
-            }
-            if(anglerotx >= Math.PI/4){
-              haveRotatedForwardx = true;
-            }
+          // if(anglerotz >= Math.PI/4){
+          //   haveRotatedForwardz = true;
+          // }
+          // if(anglerotx >= Math.PI/4){
+          //   haveRotatedForwardx = true;
+          // }
+          haveRotatedForwardx = true;
+          haveRotatedForwardz = true;
           
         }
         else if(radius < Hminx || radius < Hminy || radius < Hminz) //Roterar bakåt
         {
-         // console.log('Faller bakåt');
+          console.log('Faller bakåt');
           m = 1;
           M = 1;
                    
@@ -272,13 +270,13 @@
         {
           console.log('Translaterar');
            
+          //Translation i y-led
           transxValues = TranslationForward(accx, velx, posx, force.x ,forceInit.x, frictionStill, frictionMove, onGround, mass );
           
           //Translation i y-led
           transyValues = TranslationGravity(accy, vely, posy, mass, force.y, gravity, onGround, step, CoR);
 
           //Translation i z-led
-
           transzValues = TranslationForward(accz, velz, posz, force.z, forceInit.z, frictionStill, frictionMove, onGround, mass );
         }
            
@@ -306,7 +304,6 @@
         
         //Rotation rund samtliga axlar negativt för att det ska bli rätt med enhetscirkeln
         rotationVector = new THREE.Vector3(-velrotx,-velroty,-velrotz);
-        console.log('rotvertexID = ' + rotVertexID);
         if (onGround != -1) { // Roterar runt vertexen som nuddar marken
           rotTransVector= new THREE.Vector3(geom.vertices[rotVertexID].x, geom.vertices[rotVertexID].y, geom.vertices[rotVertexID].z);
         }else{ // Roterar runt masscentrum
@@ -333,11 +330,7 @@
         collision(object); 
         //collision(golv);
       }
-      
-      
-        
-   
-      
+
       function animate() 
       {
         requestAnimationFrame( animate ); // Request to be called again for next frame
@@ -348,6 +341,7 @@
       init();    // Set up the scene
       animate(); // Enter an infinite loop
       window.requestAnimationFrame(animate);
+
   </script>
 </body>
 
