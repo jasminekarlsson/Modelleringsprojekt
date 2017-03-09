@@ -306,6 +306,7 @@
         
         //Rotation rund samtliga axlar negativt för att det ska bli rätt med enhetscirkeln
         rotationVector = new THREE.Vector3(-velrotx,-velroty,-velrotz);
+        console.log('rotvertexID = ' + rotVertexID);
         if (onGround != -1) { // Roterar runt vertexen som nuddar marken
           rotTransVector= new THREE.Vector3(geom.vertices[rotVertexID].x, geom.vertices[rotVertexID].y, geom.vertices[rotVertexID].z);
         }else{ // Roterar runt masscentrum
